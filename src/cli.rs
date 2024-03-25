@@ -19,32 +19,32 @@ pub struct Cli {
 impl Cli {
     /// Prints how to use the program.
     pub fn print_usage() {
-        eprintln!("Usage:  rsid3 [OPTION] FILE...");
-        eprintln!("");
-        eprintln!("Reads or writes ID3v2 tags in mp3 files.");
-        eprintln!("Supported standards: ID3v2.2, ID3v2.3, ID3v2.4.");
-        eprintln!("");
-        eprintln!("Options:");
-        eprintln!("  -h, --help               Show this help and exit.");
-        eprintln!("  -L, --list-frames        List all supported frames.");
-        eprintln!("  -d SEP, --delimiter SEP  Separate multiple printed values with SEP.");
-        eprintln!("  -0, --null-delimited     Separate multiple printed values with the null byte.");
-        eprintln!("  --FRAME                  Print the value of FRAME.");
-        eprintln!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX).");
-        eprintln!("  --FRAME DESC LANG        Print the value of FRAME (COMM, USLT).");
-        eprintln!("  --FRAME= TEXT            Set the value of FRAME.");
-        eprintln!("  --FRAME= DESC TEXT       Set the value of FRAME (TXXX, WXXX).");
-        eprintln!("  --FRAME= DESC LANG TEXT  Set the value of FRAME (COMM, USLT).");
-        eprintln!("  --FRAME-                 Delete FRAME.");
-        eprintln!("  --FRAME- DESC            Delete FRAME (TXXX, WXXX).");
-        eprintln!("  --FRAME- DESC LANG       Delete FRAME (COMM, USLT).");
-        eprintln!("");
-        eprintln!("If the value of LANG is irrelevant when printing a frame, 'first'");
-        eprintln!("can be passed instead, in which case the first frame with a matching");
-        eprintln!("DESC is printed.");
-        eprintln!("If no print/set/delete options are supplied, all frames are printed.");
-        eprintln!("Any number of print/set/delete options can be passed in any order.");
-        eprintln!("Print options are evaluated first, then set, then delete.");
+        println!("Usage:  rsid3 [OPTION] FILE...");
+        println!("");
+        println!("Reads or writes ID3v2 tags in mp3 files.");
+        println!("Supported standards: ID3v2.2, ID3v2.3, ID3v2.4.");
+        println!("");
+        println!("Options:");
+        println!("  -h, --help               Show this help and exit.");
+        println!("  -L, --list-frames        List all supported frames.");
+        println!("  -d SEP, --delimiter SEP  Separate multiple printed values with SEP.");
+        println!("  -0, --null-delimited     Separate multiple printed values with the null byte.");
+        println!("  --FRAME                  Print the value of FRAME.");
+        println!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX).");
+        println!("  --FRAME DESC LANG        Print the value of FRAME (COMM, USLT).");
+        println!("  --FRAME= TEXT            Set the value of FRAME.");
+        println!("  --FRAME= DESC TEXT       Set the value of FRAME (TXXX, WXXX).");
+        println!("  --FRAME= DESC LANG TEXT  Set the value of FRAME (COMM, USLT).");
+        println!("  --FRAME-                 Delete FRAME.");
+        println!("  --FRAME- DESC            Delete FRAME (TXXX, WXXX).");
+        println!("  --FRAME- DESC LANG       Delete FRAME (COMM, USLT).");
+        println!("");
+        println!("If the value of LANG is irrelevant when printing a frame, 'first'");
+        println!("can be passed instead, in which case the first frame with a matching");
+        println!("DESC is printed.");
+        println!("If no print/set/delete options are supplied, all frames are printed.");
+        println!("Any number of print/set/delete options can be passed in any order.");
+        println!("Print options are evaluated first, then set, then delete.");
     }
 
     /// Prints the available frames.
