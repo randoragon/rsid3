@@ -33,8 +33,12 @@ impl TestFile {
 }
 
 pub fn rsid3_run(args: &[impl AsRef<OsStr>]) -> Output {
-    Command::new(PROGRAM_PATH)
-        .args(args)
-        .output()
-        .unwrap()
+    let mut cmd = Command::new(PROGRAM_PATH);
+    cmd.args(args);
+    println!("Command: {:?}", cmd);
+    let output = cmd.output().unwrap();
+    println!("Status:  {:?}", output.status);
+    println!("Stdout:  {:?}", String::from_utf8(output.stdout.clone()).unwrap());
+    println!("Stderr:  {:?}", String::from_utf8(output.stderr.clone()).unwrap());
+    output
 }
