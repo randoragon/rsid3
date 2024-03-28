@@ -42,16 +42,16 @@ impl Cli {
     /// Prints how to use the program.
     pub fn print_usage() {
         println!("Usage:  rsid3 [OPTION] FILE...");
-        println!("");
+        println!();
         println!("Reads or writes ID3v2 tags in mp3 files.");
         println!("Supported standards: ID3v2.2, ID3v2.3, ID3v2.4.");
-        println!("");
+        println!();
         println!("Options:");
         println!("  -h, --help               Show this help and exit.");
         println!("  -L, --list-frames        List all supported frames.");
         println!("  -d SEP, --delimiter SEP  Separate multiple printed values with SEP.");
         println!("  -0, --null-delimited     Separate multiple printed values with the null byte.");
-        println!("");
+        println!();
         println!("  --FRAME                  Print the value of FRAME.");
         println!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX).");
         println!("  --FRAME DESC LANG        Print the value of FRAME (COMM, USLT).");
@@ -61,7 +61,7 @@ impl Cli {
         println!("  --FRAME-                 Delete FRAME.");
         println!("  --FRAME- DESC            Delete FRAME (TXXX, WXXX).");
         println!("  --FRAME- DESC LANG       Delete FRAME (COMM, USLT).");
-        println!("");
+        println!();
         println!("  --id3v2.2                Convert tags to ID3v2.2 (lossless; may fail).");
         println!("  --id3v2.3                Convert tags to ID3v2.3 (lossless; may fail).");
         println!("  --id3v2.4                Convert tags to ID3v2.4 (lossless; may fail).");
@@ -72,11 +72,11 @@ impl Cli {
         println!("  --purge-id3v2.3          Purge ID3v2.3 tags, if present.");
         println!("  --purge-id3v2.4          Purge ID3v2.4 tags, if present.");
         println!("  --purge-all              Purge all ID3v2 tags, if present.");
-        println!("");
+        println!();
         println!("If the value of LANG is irrelevant when printing a frame, 'first'");
         println!("can be passed instead, in which case the first frame with a matching");
         println!("DESC is printed.");
-        println!("");
+        println!();
         println!("If no print/set/delete/convert/purge options are passed, all frames are printed.");
         println!("Any number of print/set/delete/convert/purge options can be passed in any order.");
         println!("Print options are evaluated first, then set, convert, delete and purge options.");
@@ -159,7 +159,7 @@ impl Cli {
         println!("WPAY	Payment information");
         println!("WPUB	Official publisher information");
         println!("WXXX	User-defined URL data (DESC, URL)");
-        println!("");
+        println!();
         println!("Read-only frames (rudimentary support):");
         println!("AENC	Audio encryption");
         println!("APIC	Attached (or linked) picture");
@@ -426,7 +426,7 @@ impl Cli {
                 },
 
                 str => {
-                    if str.starts_with("-") {
+                    if str.starts_with('-') {
                         return Err(anyhow!("Unknown option: '{arg}'"));
                     }
                     break;
@@ -455,13 +455,13 @@ impl Cli {
 
     /// Checks if a command-line argument is a getter argument.
     fn is_getter_arg(arg: &str) -> bool {
-        arg.starts_with("--") && (&arg[2..]).chars()
+        arg.starts_with("--") && (arg[2..]).chars()
             .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 
     /// Checks if a command-line argument is a setter argument.
     fn is_setter_arg(arg: &str) -> bool {
-        arg.starts_with("--") && arg.ends_with("=") && match &arg[2..(arg.len() - 1)] {
+        arg.starts_with("--") && arg.ends_with('=') && matches!(&arg[2..(arg.len() - 1)],
             "COMM" | "TALB" | "TBPM" | "TCAT" | "TCMP" | "TCOM" | "TCON" | "TCOP" |
             "TDAT" | "TDEN" | "TDES" | "TDLY" | "TDOR" | "TDRC" | "TDRL" | "TDTG" |
             "TENC" | "TEXT" | "TFLT" | "TGID" | "TIME" | "TIPL" | "TIT1" | "TIT2" |
@@ -470,14 +470,12 @@ impl Cli {
             "TPE3" | "TPE4" | "TPOS" | "TPRO" | "TPUB" | "TRCK" | "TRDA" | "TRSN" |
             "TRSO" | "TSIZ" | "TSO2" | "TSOA" | "TSOC" | "TSOP" | "TSOT" | "TSRC" |
             "TSSE" | "TSST" | "TXXX" | "TYER" | "USLT" | "WCOM" | "WCOP" | "WFED" |
-            "WOAF" | "WOAR" | "WOAS" | "WORS" | "WPAY" | "WPUB" | "WXXX" => true,
-            _ => false,
-        }
+            "WOAF" | "WOAR" | "WOAS" | "WORS" | "WPAY" | "WPUB" | "WXXX")
     }
 
     /// Checks if a command-line argument is a delete argument.
     fn is_delete_arg(arg: &str) -> bool {
-        arg.len() > 3 && arg.starts_with("--") && arg.ends_with("-")
-        && (&arg[2..(arg.len() - 1)]).chars() .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+        arg.len() > 3 && arg.starts_with("--") && arg.ends_with('-')
+        && (arg[2..(arg.len() - 1)]).chars() .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 }

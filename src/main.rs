@@ -128,7 +128,7 @@ fn set_file_frames(fpath: &impl AsRef<Path>, frames: Vec<Frame>, tag_version: Op
     let mut was_modified = false;
     for frame in frames {
         match frame.id() {
-            x if x.starts_with("T") || x.starts_with("W") || x == "COMM" || x == "USLT" => {
+            x if x.starts_with('T') || x.starts_with('W') || x == "COMM" || x == "USLT" => {
                 let _ = tag.add_frame(frame);
                 was_modified = true;
             },
@@ -224,7 +224,7 @@ fn main() -> ExitCode {
     }
 
     // Establish which tag version to write, and whether to force a conversion
-    let (tag_version, force_convert) = match cli.convert_opts.get(0) {
+    let (tag_version, force_convert) = match cli.convert_opts.first() {
         Some(ConvertOpt::Id3v22) => (Some(Version::Id3v22), false),
         Some(ConvertOpt::Id3v23) => (Some(Version::Id3v23), false),
         Some(ConvertOpt::Id3v24) => (Some(Version::Id3v24), false),
@@ -289,7 +289,7 @@ fn main() -> ExitCode {
             if is_first {
                 is_first = false;
             } else {
-                println!("");
+                println!();
             }
             if let Err(e) = print_all_file_frames_pretty(fpath) {
                 eprintln!("rsid3: {e}");

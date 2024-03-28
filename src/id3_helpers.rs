@@ -5,7 +5,7 @@ use std::io::empty;
 use std::path::Path;
 
 /// Convenience wrapper for getting any simple text content.
-pub fn get_content_text<'a>(frame: &'a Frame) -> Result<&'a str> {
+pub fn get_content_text(frame: &Frame) -> Result<&str> {
     match frame.content().text() {
         Some(x) => Ok(x),
         None => Err(anyhow!("Frame claims to be {} with T but has no text content: {frame:?}", frame.id())),
@@ -13,7 +13,7 @@ pub fn get_content_text<'a>(frame: &'a Frame) -> Result<&'a str> {
 }
 
 /// Convenience wrapper for getting any link content.
-pub fn get_content_link<'a>(frame: &'a Frame) -> Result<&'a str> {
+pub fn get_content_link(frame: &Frame) -> Result<&str> {
     match frame.content().link() {
         Some(x) => Ok(x),
         None => Err(anyhow!("Frame claims to be {} with T but has no link content: {frame:?}", frame.id())),
@@ -21,7 +21,7 @@ pub fn get_content_link<'a>(frame: &'a Frame) -> Result<&'a str> {
 }
 
 /// Convenience wrapper for getting TXXX content.
-pub fn get_content_txxx<'a>(frame: &'a Frame) -> Result<&'a ExtendedText> {
+pub fn get_content_txxx(frame: &Frame) -> Result<&ExtendedText> {
     match frame.content().extended_text() {
         Some(x) => Ok(x),
         None => Err(anyhow!("Frame claims to be TXXX but has no extended text content: {frame:?}")),
@@ -29,7 +29,7 @@ pub fn get_content_txxx<'a>(frame: &'a Frame) -> Result<&'a ExtendedText> {
 }
 
 /// Convenience wrapper for getting WXXX content.
-pub fn get_content_wxxx<'a>(frame: &'a Frame) -> Result<&'a ExtendedLink> {
+pub fn get_content_wxxx(frame: &Frame) -> Result<&ExtendedLink> {
     match frame.content().extended_link() {
         Some(x) => Ok(x),
         None => Err(anyhow!("Frame claims to be WXXX but has no extended link content: {frame:?}")),
@@ -37,7 +37,7 @@ pub fn get_content_wxxx<'a>(frame: &'a Frame) -> Result<&'a ExtendedLink> {
 }
 
 /// Convenience wrapper for getting COMM content.
-pub fn get_content_comm<'a>(frame: &'a Frame) -> Result<&'a Comment> {
+pub fn get_content_comm(frame: &Frame) -> Result<&Comment> {
     match frame.content().comment() {
         Some(x) => Ok(x),
         None => Err(anyhow!("Frame claims to be COMM but has no comment content: {frame:?}")),
@@ -45,7 +45,7 @@ pub fn get_content_comm<'a>(frame: &'a Frame) -> Result<&'a Comment> {
 }
 
 /// Convenience wrapper for getting USLT content.
-pub fn get_content_uslt<'a>(frame: &'a Frame) -> Result<&'a Lyrics> {
+pub fn get_content_uslt(frame: &Frame) -> Result<&Lyrics> {
     match frame.content().lyrics() {
         Some(x) => Ok(x),
         None => Err(anyhow!("Frame claims to be USLT but has no lyrics content: {frame:?}")),
@@ -53,7 +53,7 @@ pub fn get_content_uslt<'a>(frame: &'a Frame) -> Result<&'a Lyrics> {
 }
 
 /// Get text contents from a tag, based on a frame query.
-pub fn print_text_from_tag<'a>(tag: &'a Tag, frame: &Frame) -> Result<()> {
+pub fn print_text_from_tag(tag: &Tag, frame: &Frame) -> Result<()> {
     match frame.id() {
         "TXXX" => {
             let desc_query = &get_content_txxx(frame)?.description;
@@ -71,7 +71,7 @@ pub fn print_text_from_tag<'a>(tag: &'a Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            return Err(anyhow!("TXXX frame with description '{desc_query}' not found"));
+            Err(anyhow!("TXXX frame with description '{desc_query}' not found"))
         },
         "WXXX" => {
             let desc_query = &get_content_wxxx(frame)?.description;
@@ -88,7 +88,7 @@ pub fn print_text_from_tag<'a>(tag: &'a Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            return Err(anyhow!("WXXX frame with description '{desc_query}' not found"));
+            Err(anyhow!("WXXX frame with description '{desc_query}' not found"))
         },
         "COMM" => {
             let comment_query = get_content_comm(frame)?;
@@ -106,7 +106,7 @@ pub fn print_text_from_tag<'a>(tag: &'a Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            return Err(anyhow!("COMM frame with description '{desc_query}' and language '{lang_query}' not found"));
+            Err(anyhow!("COMM frame with description '{desc_query}' and language '{lang_query}' not found"))
         },
         "USLT" => {
             let lyrics_query = get_content_uslt(frame)?;
@@ -124,23 +124,23 @@ pub fn print_text_from_tag<'a>(tag: &'a Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            return Err(anyhow!("USLT frame with description '{desc_query}' and language '{lang_query}' not found"));
+            Err(anyhow!("USLT frame with description '{desc_query}' and language '{lang_query}' not found"))
         },
-        x if x.starts_with("T") => {
+        x if x.starts_with('T') => {
             let text_frame = match tag.get(x) {
                 Some(frame) => frame,
                 None => return Err(anyhow!("Frame not found: {x}")),
             };
             println!("{}", get_content_text(text_frame)?);
-            return Ok(());
+            Ok(())
         },
-        x if x.starts_with("W") => {
+        x if x.starts_with('W') => {
             let link_frame = match tag.get(x) {
                 Some(frame) => frame,
                 None => return Err(anyhow!("Frame not found: {x}")),
             };
             println!("{}", get_content_link(link_frame)?);
-            return Ok(());
+            Ok(())
         },
         x => {
             let frame = match tag.get(x) {
@@ -148,7 +148,7 @@ pub fn print_text_from_tag<'a>(tag: &'a Tag, frame: &Frame) -> Result<()> {
                 None => return Err(anyhow!("Frame not found: {x}")),
             };
             println!("{}", frame.content());
-            return Ok(());
+            Ok(())
         },
     }
 }
@@ -172,10 +172,10 @@ pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
             let lyrics = get_content_uslt(frame)?;
             println!("{}[{}][{}]: {}", frame.id(), lyrics.description, lyrics.lang, lyrics.text);
         },
-        str if str.starts_with("T") => {
+        str if str.starts_with('T') => {
             println!("{}: {}", frame.id(), get_content_text(frame)?);
         },
-        str if str.starts_with("W") => {
+        str if str.starts_with('W') => {
             println!("{}: {}", frame.id(), get_content_link(frame)?);
         },
         _ => {
