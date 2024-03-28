@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Result};
-use id3::{Tag, TagLike, Frame};
+use id3::{Tag, TagLike, Frame, Version};
 use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
+use std::io::empty;
+use std::path::Path;
 
 /// Convenience wrapper for getting any simple text content.
 pub fn get_content_text<'a>(frame: &'a Frame) -> Result<&'a str> {
@@ -223,4 +225,23 @@ pub fn frames_query_equal(frame1: &Frame, frame2: &Frame) -> Result<bool, anyhow
         _ => (),
     }
     Ok(true)
+}
+
+/// Attempt to write a tag to a file. `Tag.write_to_path()` does this, but it has the side-effect
+/// of deleting the tag from the target file in case of failure. This function is a wrapper that
+/// first tries to write the tag to an `std::io::Empty` dummy file, and will update the real file
+/// only if that trial write succeeded.
+pub fn try_write_tag(tag: &Tag, fpath: &impl AsRef<Path>, version: Version) -> Result<()> {
+    if let Err(e) = tag.write_to(empty(), version) {
+        return Err(anyhow!("Failed to compose tag of '{}': {e}",
+            fpath.as_ref().to_str().unwrap_or("<cannot display non-unicode path>")));
+    }
+    if let Err(e) = tag.write_to_path(fpath, version) {
+        // All errors caused by tag formats should have been caught in the previous if block.
+        // This should ideally only catch errors related to OS-level failures, e.g. insufficient
+        // storage, invalid path, etc.
+        return Err(anyhow!("Failed to write tag to '{}': {e}",
+            fpath.as_ref().to_str().unwrap_or("<cannot display non-unicode path>")));
+    }
+    Ok(())
 }

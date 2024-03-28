@@ -65,9 +65,7 @@ fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
     }
 
     if was_modified {
-        if let Err(e) = tag.write_to_path(fpath, tag.version()) {
-            return Err(anyhow!("Failed to write tags to '{fpath}': {e}"));
-        }
+        try_write_tag(&tag, &fpath, tag.version())?;
     }
 
     Ok(())
@@ -109,9 +107,7 @@ fn set_file_frames(fpath: &str, frames: Vec<Frame>) -> Result<()> {
     }
 
     if was_modified {
-        if let Err(e) = tag.write_to_path(fpath, tag.version()) {
-            return Err(anyhow!("Failed to write tags to '{fpath}': {e}"));
-        }
+        try_write_tag(&tag, &fpath, tag_version)?;
     }
 
     Ok(())
