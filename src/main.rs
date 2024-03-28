@@ -113,12 +113,12 @@ fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
 /// `force` dictates whether to force the conversion (omit frames which cannot be converted),
 /// or return an error if a lossless conversion is not possible.
 fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>, force: bool) -> Result<()> {
+    let tag_version = tag_version.unwrap_or(Version::Id3v24);
     let mut tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("rsid3: No tag found in '{fpath}'");
-                return Ok(());
+                Tag::with_version(tag_version)
             },
             _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
         }
@@ -135,8 +135,7 @@ fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>
         }
     }
 
-    if was_modified || tag_version.is_some_and(|v| v != tag.version()) {
-        let tag_version = tag_version.unwrap();
+    if was_modified || tag_version != tag.version() {
         if force {
             tag = force_convert_tag(&tag, tag_version);
         }
