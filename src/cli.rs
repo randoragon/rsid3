@@ -13,7 +13,29 @@ pub struct Cli {
     pub get_frames: Vec<Frame>,
     pub set_frames: Vec<Frame>,
     pub del_frames: Vec<Frame>,
+    pub convert_opts: Vec<ConvertOpt>,
+    pub purge_opts: Vec<PurgeOpt>,
     pub files: Vec<String>,
+}
+
+/// Represents one of convert options passed to the program on the command line.
+#[derive(Debug)]
+pub enum ConvertOpt {
+    Id3v22,
+    Id3v23,
+    Id3v24,
+    Id3v22Force,
+    Id3v23Force,
+    Id3v24Force,
+}
+
+/// Represents one of purge options passed to the program on the command line.
+#[derive(Debug)]
+pub enum PurgeOpt {
+    Id3v22,
+    Id3v23,
+    Id3v24,
+    All,
 }
 
 impl Cli {
@@ -185,6 +207,8 @@ impl Cli {
         let mut get_frames = vec![];
         let mut set_frames = vec![];
         let mut del_frames = vec![];
+        let mut convert_opts = vec![];
+        let mut purge_opts = vec![];
         let mut i = 1;
         while i < args.len() {
             let arg = args[i].as_str();
@@ -368,6 +392,39 @@ impl Cli {
                     del_frames.push(Frame::text(&str[2..(str.len() - 1)], ""));
                 },
 
+                "--id3v2.2" => {
+                    convert_opts.push(ConvertOpt::Id3v22);
+                },
+                "--id3v2.3" => {
+                    convert_opts.push(ConvertOpt::Id3v23);
+                },
+                "--id3v2.4" => {
+                    convert_opts.push(ConvertOpt::Id3v24);
+                },
+
+                "--force-id3v2.2" => {
+                    convert_opts.push(ConvertOpt::Id3v22Force);
+                },
+                "--force-id3v2.3" => {
+                    convert_opts.push(ConvertOpt::Id3v23Force);
+                },
+                "--force-id3v2.4" => {
+                    convert_opts.push(ConvertOpt::Id3v24Force);
+                },
+
+                "--purge-id3v2.2" => {
+                    purge_opts.push(PurgeOpt::Id3v22);
+                },
+                "--purge-id3v2.3" => {
+                    purge_opts.push(PurgeOpt::Id3v23);
+                },
+                "--purge-id3v2.4" => {
+                    purge_opts.push(PurgeOpt::Id3v24);
+                },
+                "--purge-all" => {
+                    purge_opts.push(PurgeOpt::All);
+                },
+
                 str => {
                     if str.starts_with("-") {
                         return Err(anyhow!("Unknown option: '{arg}'"));
@@ -390,6 +447,8 @@ impl Cli {
             get_frames,
             set_frames,
             del_frames,
+            convert_opts,
+            purge_opts,
             files,
         })
     }
