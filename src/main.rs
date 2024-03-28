@@ -181,10 +181,12 @@ fn main() -> ExitCode {
     }
 
     // Handle all get options
-    for fpath in &cli.files {
-        if let Err(e) = print_file_frames(fpath, &cli.get_frames, &delimiter) {
-            eprintln!("rsid3: {e}");
-            return ExitCode::FAILURE;
+    if !cli.get_frames.is_empty() {
+        for fpath in &cli.files {
+            if let Err(e) = print_file_frames(fpath, &cli.get_frames, &delimiter) {
+                eprintln!("rsid3: {e}");
+                return ExitCode::FAILURE;
+            }
         }
     }
 
@@ -200,10 +202,12 @@ fn main() -> ExitCode {
     };
 
     // Handle all set options
-    for fpath in &cli.files {
-        if let Err(e) = set_file_frames(fpath, cli.set_frames.to_owned(), tag_version, force_convert) {
-            eprintln!("rsid3: {e}");
-            return ExitCode::FAILURE;
+    if !cli.set_frames.is_empty() {
+        for fpath in &cli.files {
+            if let Err(e) = set_file_frames(fpath, cli.set_frames.to_owned(), tag_version, force_convert) {
+                eprintln!("rsid3: {e}");
+                return ExitCode::FAILURE;
+            }
         }
     }
 
@@ -220,10 +224,12 @@ fn main() -> ExitCode {
     }
 
     // Handle all delete options
-    for fpath in &cli.files {
-        if let Err(e) = delete_file_frames(fpath, &cli.del_frames) {
-            eprintln!("rsid3: {e}");
-            return ExitCode::FAILURE;
+    if !cli.del_frames.is_empty() {
+        for fpath in &cli.files {
+            if let Err(e) = delete_file_frames(fpath, &cli.del_frames) {
+                eprintln!("rsid3: {e}");
+                return ExitCode::FAILURE;
+            }
         }
     }
 
