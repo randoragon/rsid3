@@ -9,7 +9,11 @@ fn prints_help() {
 }
 
 #[test]
-fn gets_text() {
+fn gets_empty() {
     let file = TestFile::empty();
-    let output = rsid3_run(&["--"]);
+    let output = rsid3_run(&[file.path()]);
+    assert_eq!(output.stderr, [
+        file.path().as_os_str().as_encoded_bytes(),
+        ": No tag found\n".as_bytes(),
+    ].concat());
 }
