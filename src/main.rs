@@ -144,20 +144,6 @@ fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>
     Ok(())
 }
 
-/// Forcefully convert a tag to a target ID3 version. Any frames that do not exist in the
-/// target representation are simply omitted from the result.
-fn force_convert_tag(tag: &Tag, target_version: Version) -> Tag {
-    if tag.version() == target_version {
-        return tag.clone();
-    }
-
-    let mut new_tag = Tag::with_version(target_version);
-    for frame in tag.frames().filter(|x| x.id_for_version(target_version).is_some()) {
-        new_tag.add_frame(frame.clone());
-    }
-    new_tag
-}
-
 fn main() -> ExitCode {
     let cli = match Cli::parse_args() {
         Ok(cli) => cli,

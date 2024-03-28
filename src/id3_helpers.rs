@@ -227,6 +227,20 @@ pub fn frames_query_equal(frame1: &Frame, frame2: &Frame) -> Result<bool, anyhow
     Ok(true)
 }
 
+/// Forcefully convert a tag to a target ID3 version. Any frames that do not exist in the
+/// target representation are simply omitted from the result.
+pub fn force_convert_tag(tag: &Tag, target_version: Version) -> Tag {
+    if tag.version() == target_version {
+        return tag.clone();
+    }
+
+    let mut new_tag = Tag::with_version(target_version);
+    for frame in tag.frames().filter(|x| x.id_for_version(target_version).is_some()) {
+        new_tag.add_frame(frame.clone());
+    }
+    new_tag
+}
+
 /// Attempt to write a tag to a file. `Tag.write_to_path()` does this, but it has the side-effect
 /// of deleting the tag from the target file in case of failure. This function is a wrapper that
 /// first tries to write the tag to an `std::io::Empty` dummy file, and will update the real file
