@@ -29,6 +29,7 @@ impl Cli {
         println!("  -L, --list-frames        List all supported frames.");
         println!("  -d SEP, --delimiter SEP  Separate multiple printed values with SEP.");
         println!("  -0, --null-delimited     Separate multiple printed values with the null byte.");
+        println!("");
         println!("  --FRAME                  Print the value of FRAME.");
         println!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX).");
         println!("  --FRAME DESC LANG        Print the value of FRAME (COMM, USLT).");
@@ -39,12 +40,27 @@ impl Cli {
         println!("  --FRAME- DESC            Delete FRAME (TXXX, WXXX).");
         println!("  --FRAME- DESC LANG       Delete FRAME (COMM, USLT).");
         println!("");
+        println!("  --id3v2.2                Convert tags to ID3v2.2 (lossless; may fail).");
+        println!("  --id3v2.3                Convert tags to ID3v2.3 (lossless; may fail).");
+        println!("  --id3v2.4                Convert tags to ID3v2.4 (lossless; may fail).");
+        println!("  --force-id3v2.2          Convert tags to ID3v2.2 (omit non-convertible frames; always succeeds).");
+        println!("  --force-id3v2.3          Convert tags to ID3v2.3 (omit non-convertible frames; always succeeds).");
+        println!("  --force-id3v2.4          Convert tags to ID3v2.4 (omit non-convertible frames; always succeeds).");
+        println!("  --purge-id3v2.2          Purge ID3v2.2 tags, if present.");
+        println!("  --purge-id3v2.3          Purge ID3v2.3 tags, if present.");
+        println!("  --purge-id3v2.4          Purge ID3v2.4 tags, if present.");
+        println!("  --purge-all              Purge all ID3v2 tags, if present.");
+        println!("");
         println!("If the value of LANG is irrelevant when printing a frame, 'first'");
         println!("can be passed instead, in which case the first frame with a matching");
         println!("DESC is printed.");
-        println!("If no print/set/delete options are supplied, all frames are printed.");
-        println!("Any number of print/set/delete options can be passed in any order.");
-        println!("Print options are evaluated first, then set, then delete.");
+        println!("");
+        println!("If no print/set/delete/convert/purge options are passed, all frames are printed.");
+        println!("Any number of print/set/delete/convert/purge options can be passed in any order.");
+        println!("Print options are evaluated first, then set, convert, delete and purge options.");
+        println!("Convert options cannot be combined, as it wouldn't make sense. If no convert");
+        println!("options are passed, rsid3 keeps the existing tag versions, or defaults to ID3v2.4");
+        println!("when creating new tags from scratch.");
     }
 
     /// Prints the available frames.
