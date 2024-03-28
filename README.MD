@@ -5,9 +5,9 @@ A simple command-line ID3v2 tag editor designed with scripting in mind.
 ## Features
 
 - Print all frames of a file,
-- Print, set or delete chosen frames.
-- Convert between ID3v2.2, ID3v2.3 and ID3v2.4 versions
-- Purge all tags belonging to a specific (or any) ID3v2 version
+- Print, set or delete chosen frames,
+- Convert between ID3v2.2, ID3v2.3 and ID3v2.4 versions,
+- Purge all tags belonging to a specific (or any) ID3v2 version.
 
 ## Examples
 
