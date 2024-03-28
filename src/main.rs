@@ -1,7 +1,7 @@
 mod cli;
 mod id3_helpers;
 
-use cli::{Cli, ConvertOpt};
+use cli::{Cli, ConvertOpt, PurgeOpt};
 use id3_helpers::*;
 use std::process::ExitCode;
 use anyhow::{anyhow, Result};
@@ -144,6 +144,37 @@ fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>
     Ok(())
 }
 
+/// Purge specified tag versions from a file.
+fn purge_tags(fpath: &str, purge_opts: &[PurgeOpt]) -> Result<()> {
+    let tag = match Tag::read_from_path(fpath) {
+        Ok(tag) => tag,
+        Err(e) => match e.kind {
+            id3::ErrorKind::NoTag => {
+                eprintln!("rsid3: No tag found in '{fpath}'");
+                return Ok(());
+            },
+            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        }
+    };
+
+    for opt in purge_opts {
+        if match opt {
+            PurgeOpt::Id3v22 => tag.version() == Version::Id3v22,
+            PurgeOpt::Id3v23 => tag.version() == Version::Id3v23,
+            PurgeOpt::Id3v24 => tag.version() == Version::Id3v24,
+            PurgeOpt::All => true,
+        } {
+            if let Err(e) = id3::v1v2::remove_from_path(fpath) {
+                return Err(anyhow!("Failed to remove tags from '{fpath}': {e}"));
+            }
+            return Ok(());
+        }
+    };
+
+    // No matching tag found in file, do nothing
+    Ok(())
+}
+
 fn main() -> ExitCode {
     let cli = match Cli::parse_args() {
         Ok(cli) => cli,
@@ -227,6 +258,16 @@ fn main() -> ExitCode {
     if !cli.del_frames.is_empty() {
         for fpath in &cli.files {
             if let Err(e) = delete_file_frames(fpath, &cli.del_frames) {
+                eprintln!("rsid3: {e}");
+                return ExitCode::FAILURE;
+            }
+        }
+    }
+
+    // Handle all purge options
+    if !cli.purge_opts.is_empty() {
+        for fpath in &cli.files {
+            if let Err(e) = purge_tags(fpath, &cli.purge_opts) {
                 eprintln!("rsid3: {e}");
                 return ExitCode::FAILURE;
             }
