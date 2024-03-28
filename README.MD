@@ -6,11 +6,12 @@ A simple command-line ID3v2 tag editor designed with scripting in mind.
 
 - Print all frames of a file,
 - Print, set or delete chosen frames.
+- Convert between ID3v2.2, ID3v2.3 and ID3v2.4 versions
+- Purge all tags belonging to a specific (or any) ID3v2 version
 
 ## Examples
 
 ```sh
-
 # Printing frames
 rsid3 file.mp3                               # Print all frames
 rsid3 --TIT2 file.mp3                        # Print TIT2 (title)
@@ -20,17 +21,27 @@ rsid3 --COMM some_desc first file.mp3        # Print COMM[some_desc] and any fir
 rsid3 -d, --TIT2 --TPE1 --TALB file.mp3      # Print title, artist and album, delimited by comma
 
 # Setting frames
-rsid3 --TIT2= 'My Title' file.mp3              # Set TIT2
-rsid3 --TXXX= some_desc 'some value' file.mp3  # Set TXXX[some_desc]
-rsid3 --COMM= some_desc eng file.mp3           # Set COMM[some_desc](eng)
+rsid3 --TIT2= 'My Title' file.mp3                  # Set TIT2
+rsid3 --TXXX= some_desc 'some value' file.mp3      # Set TXXX[some_desc]
+rsid3 --COMM= some_desc eng 'My comment' file.mp3  # Set COMM[some_desc](eng)
 
 # Deleting frames
-rsid3 --TIT2- file.mp3                    # Delete TIT2
-rsid3 --TXXX- some_desc file.mp3          # Delete TXXX[some_desc]
-rsid3 --COMM- some_desc eng file.mp3      # Delete COMM[some_desc](eng)
+rsid3 --TIT2- file.mp3                   # Delete TIT2
+rsid3 --TXXX- some_desc file.mp3         # Delete TXXX[some_desc]
+rsid3 --COMM- some_desc eng file.mp3     # Delete COMM[some_desc](eng)
 
-# All types of options can be mixed; prints always happen first, then sets, then deletes
-rsid3 --TIT2 --TIT2= new_title file.mp3  # Print old title and set new title
+# Converting between ID3v2 versions
+rsid3 --id3v2.4 file.mp3                 # Try losslessly converting a tag to ID3v2.4
+rsid3 --force-id3v2.2 file.mp3           # Forcefully convert a tag to ID3v2.2
+rsid3 --id3v2.2 --id3v2.4 file.mp3       # Illegal, only one option allowed at a time
+
+# Purging frames
+rsid3 --purge-id3v2.3 file.mp3           # Remove all tag information if it's ID3v2.3
+rsid3 --purge-all file.mp3               # Remove all tag information, irrespective of version
+
+# All types of options can be mixed; prints happen first, then sets, convert, deletes and purges
+rsid3 --TIT2 --TIT2= new_title file.mp3             # Print old title and set new title
+rsid3 --id3v2.3 --TPE1= new_artist --TALB file.mp3  # Print album, set artist and convert to ID3v2.3
 
 # Any number of target files can be specified. The following command prints "artist - title",
 # removes COMM[some_desc](eng) and sets TXXX[abc] to "def" for two files, all in one command:
