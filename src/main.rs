@@ -11,7 +11,13 @@ use id3::{Tag, TagLike, Frame, Version};
 fn print_file_frames(fpath: &str, frames: &Vec<Frame>, delimiter: &str) -> Result<()> {
     let tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
-        Err(e) => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        Err(e) => match e.kind {
+            id3::ErrorKind::NoTag => {
+                eprintln!("rsid3: No tag found in '{fpath}'");
+                return Ok(());
+            },
+            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        }
     };
 
     let mut is_first = true;
@@ -32,7 +38,13 @@ fn print_file_frames(fpath: &str, frames: &Vec<Frame>, delimiter: &str) -> Resul
 fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
     let mut tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
-        Err(e) => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        Err(e) => match e.kind {
+            id3::ErrorKind::NoTag => {
+                eprintln!("rsid3: No tag found in '{fpath}'");
+                return Ok(());
+            },
+            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        }
     };
 
     // Not the most efficient approach, but the id3 crate API is not the best either
@@ -75,7 +87,13 @@ fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
 fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
     let tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
-        Err(e) => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        Err(e) => match e.kind {
+            id3::ErrorKind::NoTag => {
+                eprintln!("rsid3: No tag found in '{fpath}'");
+                return Ok(());
+            },
+            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        }
     };
 
     let n_frames = tag.frames().count();
@@ -95,7 +113,13 @@ fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
 fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>, force: bool) -> Result<()> {
     let mut tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
-        Err(e) => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        Err(e) => match e.kind {
+            id3::ErrorKind::NoTag => {
+                eprintln!("rsid3: No tag found in '{fpath}'");
+                return Ok(());
+            },
+            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+        }
     };
 
     let mut was_modified = false;
