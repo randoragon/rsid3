@@ -59,20 +59,22 @@ fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
                 tag.add_frame(removed_frame);
             }
         }
-        let frame_str = match frame.id() {
-            "WXXX" => format!("{}[{}]", frame.id(), get_content_wxxx(frame)?.description),
-            "TXXX" => format!("{}[{}]", frame.id(), get_content_txxx(frame)?.description),
-            "COMM" => {
-                let comment = get_content_comm(frame)?;
-                format!("{}[{}]({})", frame.id(), comment.description, comment.lang)
-            },
-            "USLT" => {
-                let lyrics = get_content_uslt(frame)?;
-                format!("{}[{}]({})", frame.id(), lyrics.description, lyrics.lang)
-            },
-            x => x.to_string(),
-        };
-        eprintln!("{fpath}: Could not delete {frame_str}: frame not found");
+        if !found {
+            let frame_str = match frame.id() {
+                "WXXX" => format!("{}[{}]", frame.id(), get_content_wxxx(frame)?.description),
+                "TXXX" => format!("{}[{}]", frame.id(), get_content_txxx(frame)?.description),
+                "COMM" => {
+                    let comment = get_content_comm(frame)?;
+                    format!("{}[{}]({})", frame.id(), comment.description, comment.lang)
+                },
+                "USLT" => {
+                    let lyrics = get_content_uslt(frame)?;
+                    format!("{}[{}]({})", frame.id(), lyrics.description, lyrics.lang)
+                },
+                x => x.to_string(),
+            };
+            eprintln!("{fpath}: Could not delete {frame_str}: frame not found");
+        }
         was_modified |= found;
     }
 
