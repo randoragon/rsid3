@@ -2,21 +2,22 @@ mod cli;
 mod id3_helpers;
 
 use cli::{Cli, ConvertOpt, PurgeOpt};
+use std::path::Path;
 use id3_helpers::*;
 use std::process::ExitCode;
 use anyhow::{anyhow, Result};
 use id3::{Tag, TagLike, Frame, Version};
 
 /// Prints frames from a file, with a custom delimiter.
-fn print_file_frames(fpath: &str, frames: &Vec<Frame>, delimiter: &str) -> Result<()> {
+fn print_file_frames(fpath: &impl AsRef<Path>, frames: &Vec<Frame>, delimiter: &str) -> Result<()> {
     let tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("{fpath}: no tag found");
+                eprintln!("{}: no tag found", fpath.as_ref().display());
                 return Ok(());
             },
-            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+            _ => return Err(anyhow!("Failed to read tags from file '{}': {e}", fpath.as_ref().display())),
         }
     };
 
@@ -35,15 +36,15 @@ fn print_file_frames(fpath: &str, frames: &Vec<Frame>, delimiter: &str) -> Resul
 }
 
 /// Deletes frames from a file.
-fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
+fn delete_file_frames(fpath: &impl AsRef<Path>, frames: &Vec<Frame>) -> Result<()> {
     let mut tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("{fpath}: no tag found");
+                eprintln!("{}: no tag found", fpath.as_ref().display());
                 return Ok(());
             },
-            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+            _ => return Err(anyhow!("Failed to read tags from file '{}': {e}", fpath.as_ref().display())),
         }
     };
 
@@ -73,7 +74,7 @@ fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
                 },
                 x => x.to_string(),
             };
-            eprintln!("{fpath}: Could not delete {frame_str}: frame not found");
+            eprintln!("{}: Could not delete {frame_str}: frame not found", fpath.as_ref().display());
         }
         was_modified |= found;
     }
@@ -86,20 +87,20 @@ fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
 }
 
 /// Pretty-prints all supported frames stored in the file.
-fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
+fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
     let tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("{fpath}: No tag found");
+                eprintln!("{}: No tag found", fpath.as_ref().display());
                 return Ok(());
             },
-            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+            _ => return Err(anyhow!("Failed to read tags from file '{}': {e}", fpath.as_ref().display())),
         }
     };
 
     let n_frames = tag.frames().count();
-    println!("{}: {}, {} frame{}:", fpath, tag.version(), n_frames,
+    println!("{}: {}, {} frame{}:", fpath.as_ref().display(), tag.version(), n_frames,
         if n_frames == 1 { "" } else { "s" });
     for frame in tag.frames() {
         print_frame_pretty(frame)?;
@@ -112,7 +113,7 @@ fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
 /// If `tag_version` is `None`, stick to the version in the existing tag.
 /// `force` dictates whether to force the conversion (omit frames which cannot be converted),
 /// or return an error if a lossless conversion is not possible.
-fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>, force: bool) -> Result<()> {
+fn set_file_frames(fpath: &impl AsRef<Path>, frames: Vec<Frame>, tag_version: Option<Version>, force: bool) -> Result<()> {
     let tag_version = tag_version.unwrap_or(Version::Id3v24);
     let mut tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
@@ -120,7 +121,7 @@ fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>
             id3::ErrorKind::NoTag => {
                 Tag::with_version(tag_version)
             },
-            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+            _ => return Err(anyhow!("Failed to read tags from file '{}': {e}", fpath.as_ref().display())),
         }
     };
 
@@ -146,15 +147,15 @@ fn set_file_frames(fpath: &str, frames: Vec<Frame>, tag_version: Option<Version>
 }
 
 /// Purge specified tag versions from a file.
-fn purge_tags(fpath: &str, purge_opts: &[PurgeOpt]) -> Result<()> {
+fn purge_tags(fpath: &impl AsRef<Path>, purge_opts: &[PurgeOpt]) -> Result<()> {
     let tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("{fpath}: no tag found");
+                eprintln!("{}: no tag found", fpath.as_ref().display());
                 return Ok(());
             },
-            _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
+            _ => return Err(anyhow!("Failed to read tags from file '{}': {e}", fpath.as_ref().display())),
         }
     };
 
@@ -166,7 +167,7 @@ fn purge_tags(fpath: &str, purge_opts: &[PurgeOpt]) -> Result<()> {
             PurgeOpt::All => true,
         } {
             if let Err(e) = id3::v1v2::remove_from_path(fpath) {
-                return Err(anyhow!("Failed to remove tags from '{fpath}': {e}"));
+                return Err(anyhow!("Failed to remove tags from '{}': {e}", fpath.as_ref().display()));
             }
             return Ok(());
         }

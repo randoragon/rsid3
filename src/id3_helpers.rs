@@ -247,15 +247,13 @@ pub fn force_convert_tag(tag: &Tag, target_version: Version) -> Tag {
 /// only if that trial write succeeded.
 pub fn try_write_tag(tag: &Tag, fpath: &impl AsRef<Path>, version: Version) -> Result<()> {
     if let Err(e) = tag.write_to(empty(), version) {
-        return Err(anyhow!("Failed to compose tag of '{}': {e}",
-            fpath.as_ref().to_str().unwrap_or("<cannot display non-unicode path>")));
+        return Err(anyhow!("Failed to compose tag of '{}': {e}", fpath.as_ref().display()));
     }
     if let Err(e) = tag.write_to_path(fpath, version) {
         // All errors caused by tag formats should have been caught in the previous if block.
         // This should ideally only catch errors related to OS-level failures, e.g. insufficient
         // storage, invalid path, etc.
-        return Err(anyhow!("Failed to write tag to '{}': {e}",
-            fpath.as_ref().to_str().unwrap_or("<cannot display non-unicode path>")));
+        return Err(anyhow!("Failed to write tag to '{}': {e}", fpath.as_ref().display()));
     }
     Ok(())
 }
