@@ -81,7 +81,7 @@ fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
     };
 
     let n_frames = tag.frames().count();
-    println!("\n{}: {}, {} frame{}:", fpath, tag.version(), n_frames,
+    println!("{}: {}, {} frame{}:", fpath, tag.version(), n_frames,
         if n_frames == 1 { "" } else { "s" });
     for frame in tag.frames() {
         print_frame_pretty(frame)?;
@@ -178,7 +178,13 @@ fn main() -> ExitCode {
         }
 
         // Print all frames if no options supplied
+        let mut is_first = true;
         for fpath in &cli.files {
+            if is_first {
+                is_first = false;
+            } else {
+                println!("");
+            }
             if let Err(e) = print_all_file_frames_pretty(fpath) {
                 eprintln!("rsid3: {e}");
                 return ExitCode::FAILURE;
