@@ -13,7 +13,7 @@ fn print_file_frames(fpath: &str, frames: &Vec<Frame>, delimiter: &str) -> Resul
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("rsid3: No tag found in '{fpath}'");
+                eprintln!("{fpath}: no tag found");
                 return Ok(());
             },
             _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
@@ -40,7 +40,7 @@ fn delete_file_frames(fpath: &str, frames: &Vec<Frame>) -> Result<()> {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("rsid3: No tag found in '{fpath}'");
+                eprintln!("{fpath}: no tag found");
                 return Ok(());
             },
             _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
@@ -91,7 +91,7 @@ fn print_all_file_frames_pretty(fpath: &str) -> Result<()> {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("rsid3: No tag found in '{fpath}'");
+                eprintln!("{fpath}: No tag found");
                 return Ok(());
             },
             _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
@@ -151,7 +151,7 @@ fn purge_tags(fpath: &str, purge_opts: &[PurgeOpt]) -> Result<()> {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("rsid3: No tag found in '{fpath}'");
+                eprintln!("{fpath}: no tag found");
                 return Ok(());
             },
             _ => return Err(anyhow!("Failed to read tags from file '{fpath}': {e}")),
