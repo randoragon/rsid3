@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::path::Path;
 use std::fs::{create_dir_all, copy};
 use tempfile::NamedTempFile;
@@ -31,7 +32,7 @@ impl TestFile {
     }
 }
 
-pub fn rsid3_run(args: &[&str]) -> Output {
+pub fn rsid3_run(args: &[impl AsRef<OsStr>]) -> Output {
     Command::new(PROGRAM_PATH)
         .args(args)
         .output()
