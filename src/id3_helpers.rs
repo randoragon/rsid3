@@ -52,8 +52,28 @@ pub fn get_content_uslt(frame: &Frame) -> Result<&Lyrics> {
     }
 }
 
+/// Returns a string representation of a frame, WITHOUT CONTENT.
+pub fn frame_to_string(frame: &Frame) -> Result<String, anyhow::Error> {
+    let string = match frame.id() {
+        "WXXX" => format!("{}[{}]", frame.id(), get_content_wxxx(frame)?.description),
+        "TXXX" => format!("{}[{}]", frame.id(), get_content_txxx(frame)?.description),
+        "COMM" => {
+            let comment = get_content_comm(frame)?;
+            format!("{}[{}]({})", frame.id(), comment.description, comment.lang)
+        },
+        "USLT" => {
+            let lyrics = get_content_uslt(frame)?;
+            format!("{}[{}]({})", frame.id(), lyrics.description, lyrics.lang)
+        },
+        x => x.to_string(),
+    };
+    Ok(string)
+}
+
 /// Attempts to find a tag frame matching a query and prints its contents as text.
-pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
+/// `fpath` is only used for message prints.
+/// Returns whether a frame was found and printed.
+pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: &str) -> Result<()> {
     match frame.id() {
         "TXXX" => {
             let desc_query = &get_content_txxx(frame)?.description;
@@ -71,7 +91,6 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            Err(anyhow!("TXXX frame with description '{desc_query}' not found"))
         },
         "WXXX" => {
             let desc_query = &get_content_wxxx(frame)?.description;
@@ -88,7 +107,6 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            Err(anyhow!("WXXX frame with description '{desc_query}' not found"))
         },
         "COMM" => {
             let comment_query = get_content_comm(frame)?;
@@ -106,7 +124,6 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            Err(anyhow!("COMM frame with description '{desc_query}' and language '{lang_query}' not found"))
         },
         "USLT" => {
             let lyrics_query = get_content_uslt(frame)?;
@@ -124,33 +141,29 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     return Ok(());
                 }
             }
-            Err(anyhow!("USLT frame with description '{desc_query}' and language '{lang_query}' not found"))
         },
         x if x.starts_with('T') => {
-            let text_frame = match tag.get(x) {
-                Some(frame) => frame,
-                None => return Err(anyhow!("Frame not found: {x}")),
-            };
-            print!("{}", get_content_text(text_frame)?);
-            Ok(())
+            if let Some(frame) = tag.get(x) {
+                print!("{}", get_content_text(frame)?);
+                return Ok(());
+            }
         },
         x if x.starts_with('W') => {
-            let link_frame = match tag.get(x) {
-                Some(frame) => frame,
-                None => return Err(anyhow!("Frame not found: {x}")),
-            };
-            print!("{}", get_content_link(link_frame)?);
-            Ok(())
+            if let Some(frame) = tag.get(x) {
+                print!("{}", get_content_link(frame)?);
+                return Ok(());
+            }
         },
         x => {
-            let frame = match tag.get(x) {
-                Some(frame) => frame,
-                None => return Err(anyhow!("Frame not found: {x}")),
-            };
-            print!("{}", frame.content());
-            Ok(())
+            if let Some(frame) = tag.get(x) {
+                print!("{}", frame.content());
+                return Ok(());
+            }
         },
     }
+    // Frame not found
+    eprintln!("{}: Could not print {}: Frame not found", fpath, frame_to_string(frame)?);
+    Ok(())
 }
 
 /// Pretty-prints a single frame's name and contents.
@@ -186,7 +199,9 @@ pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
 }
 
 /// Deletes a frame matching a query from a tag.
-pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame) -> Result<()> {
+/// `fpath` is only used for message prints.
+/// Returns whether tag was modified.
+pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: &str) -> Result<bool> {
     let mut found = false;
 
     // Not the most efficient approach, but the id3 crate does not seem to provide a nicer way
@@ -198,25 +213,11 @@ pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame) -> Result<()> {
             tag.add_frame(removed_frame);
         }
     }
-
     if !found {
-        let frame_str = match frame.id() {
-            "WXXX" => format!("{}[{}]", frame.id(), get_content_wxxx(frame)?.description),
-            "TXXX" => format!("{}[{}]", frame.id(), get_content_txxx(frame)?.description),
-            "COMM" => {
-                let comment = get_content_comm(frame)?;
-                format!("{}[{}]({})", frame.id(), comment.description, comment.lang)
-            },
-            "USLT" => {
-                let lyrics = get_content_uslt(frame)?;
-                format!("{}[{}]({})", frame.id(), lyrics.description, lyrics.lang)
-            },
-            x => x.to_string(),
-        };
-        return Err(anyhow!("Could not delete {frame_str}: frame not found"));
+        eprintln!("{}: Could not delete {}: Frame not found", fpath, frame_to_string(frame)?);
+        return Ok(false);
     }
-
-    Ok(())
+    Ok(true)
 }
 
 /// Returns whether two frames are identical except for the relevant content component.

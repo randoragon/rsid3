@@ -133,7 +133,7 @@ fn main() -> ExitCode {
                                 is_first_file_print = false;
                             }
                         }
-                        if let Err(e) = print_tag_frame_query(&tag, frame) {
+                        if let Err(e) = print_tag_frame_query(&tag, frame, fpath) {
                             eprintln!("rsid3: {e}");
                             return ExitCode::FAILURE;
                         }
@@ -150,9 +150,9 @@ fn main() -> ExitCode {
                         }
                     },
                     Action::Delete(frame) => {
-                        match delete_tag_frame(&mut tag, frame) {
-                            Ok(_) => {
-                                tag_was_modified = true;
+                        match delete_tag_frame(&mut tag, frame, fpath) {
+                            Ok(modified) => {
+                                tag_was_modified |= modified;
                             },
                             Err(e) => {
                                 eprintln!("rsid3: {e}");
