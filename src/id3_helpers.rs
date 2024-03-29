@@ -67,7 +67,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     },
                 };
                 if extended_text.description == *desc_query {
-                    println!("{}", extended_text.value);
+                    print!("{}", extended_text.value);
                     return Ok(());
                 }
             }
@@ -84,7 +84,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     },
                 };
                 if extended_link.description == *desc_query {
-                    println!("{}", extended_link.link);
+                    print!("{}", extended_link.link);
                     return Ok(());
                 }
             }
@@ -102,7 +102,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     },
                 };
                 if comment.description == *desc_query && (comment.lang == *lang_query || *lang_query == "first") {
-                    println!("{}", comment.text);
+                    print!("{}", comment.text);
                     return Ok(());
                 }
             }
@@ -120,7 +120,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                     },
                 };
                 if lyrics.description == *desc_query && (lyrics.lang == *lang_query || *lang_query == "first") {
-                    println!("{}", lyrics.text);
+                    print!("{}", lyrics.text);
                     return Ok(());
                 }
             }
@@ -131,7 +131,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                 Some(frame) => frame,
                 None => return Err(anyhow!("Frame not found: {x}")),
             };
-            println!("{}", get_content_text(text_frame)?);
+            print!("{}", get_content_text(text_frame)?);
             Ok(())
         },
         x if x.starts_with('W') => {
@@ -139,7 +139,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                 Some(frame) => frame,
                 None => return Err(anyhow!("Frame not found: {x}")),
             };
-            println!("{}", get_content_link(link_frame)?);
+            print!("{}", get_content_link(link_frame)?);
             Ok(())
         },
         x => {
@@ -147,7 +147,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
                 Some(frame) => frame,
                 None => return Err(anyhow!("Frame not found: {x}")),
             };
-            println!("{}", frame.content());
+            print!("{}", frame.content());
             Ok(())
         },
     }
