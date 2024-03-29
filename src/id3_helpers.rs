@@ -73,7 +73,7 @@ pub fn frame_to_string(frame: &Frame) -> Result<String, anyhow::Error> {
 /// Attempts to find a tag frame matching a query and prints its contents as text.
 /// `fpath` is only used for message prints.
 /// Returns whether a frame was found and printed.
-pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: &str) -> Result<()> {
+pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<()> {
     match frame.id() {
         "TXXX" => {
             let desc_query = &get_content_txxx(frame)?.description;
@@ -162,7 +162,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: &str) -> Result<()
         },
     }
     // Frame not found
-    eprintln!("{}: Could not print {}: Frame not found", fpath, frame_to_string(frame)?);
+    eprintln!("{}: Could not print {}: Frame not found", fpath.as_ref().display(), frame_to_string(frame)?);
     Ok(())
 }
 
@@ -201,7 +201,7 @@ pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
 /// Deletes a frame matching a query from a tag.
 /// `fpath` is only used for message prints.
 /// Returns whether tag was modified.
-pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: &str) -> Result<bool> {
+pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
     let mut found = false;
 
     // Not the most efficient approach, but the id3 crate does not seem to provide a nicer way
@@ -214,7 +214,7 @@ pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: &str) -> Result<boo
         }
     }
     if !found {
-        eprintln!("{}: Could not delete {}: Frame not found", fpath, frame_to_string(frame)?);
+        eprintln!("{}: Could not delete {}: Frame not found", fpath.as_ref().display(), frame_to_string(frame)?);
         return Ok(false);
     }
     Ok(true)
