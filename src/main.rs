@@ -92,106 +92,106 @@ fn main() -> ExitCode {
     };
 
     // Handle all actions
-    let mut is_first_file_print = true;
-    for fpath in &cli.files {
-        // Read the file's tag
-        let mut tag = match Tag::read_from_path(fpath) {
-            Ok(tag) => tag,
-            Err(e) => match e.kind {
-                id3::ErrorKind::NoTag => {
-                    eprintln!("{fpath}: no tag found");
-                    break;
-                },
-                _ => {
-                    eprintln!("rsid3: Failed to read tags from file '{fpath}': {e}");
-                    break;
-                },
-            }
-        };
-        let mut tag_was_modified = false;
-        let mut is_first_frame_print = true;
+    if !cli.actions.is_empty() {
+        let mut is_first_file_print = true;
+        for fpath in &cli.files {
+            // Read the file's tag
+            let mut tag = match Tag::read_from_path(fpath) {
+                Ok(tag) => tag,
+                Err(e) => match e.kind {
+                    id3::ErrorKind::NoTag => {
+                        Tag::with_version(Version::Id3v24)
+                    },
+                    _ => {
+                        eprintln!("rsid3: Failed to read tags from file '{fpath}': {e}");
+                        break;
+                    },
+                }
+            };
+            let mut tag_was_modified = false;
+            let mut is_first_frame_print = true;
 
-        for action in &cli.actions {
-            match action {
-                Action::Print(frame) => {
-                    if !is_first_frame_print {
-                        print!("{delimiter}");
-                    } else {
-                        is_first_frame_print = false;
-                        if !is_first_file_print {
-                            println!();
+            for action in &cli.actions {
+                match action {
+                    Action::Print(frame) => {
+                        if !is_first_frame_print {
+                            print!("{delimiter}");
                         } else {
-                            is_first_file_print = false;
+                            is_first_frame_print = false;
+                            if !is_first_file_print {
+                                println!();
+                            } else {
+                                is_first_file_print = false;
+                            }
                         }
-                    }
-                    if let Err(e) = print_tag_frame_query(&tag, frame) {
-                        eprintln!("rsid3: {e}");
-                        return ExitCode::FAILURE;
-                    }
-                },
-                Action::Set(frame) => {
-                    match set_tag_frame(&mut tag, frame.clone()) {
-                        Ok(_) => {
-                            tag_was_modified = true;
-                        },
-                        Err(e) => {
+                        if let Err(e) = print_tag_frame_query(&tag, frame) {
                             eprintln!("rsid3: {e}");
                             return ExitCode::FAILURE;
-                        },
-                    }
-                },
-                Action::Delete(frame) => {
-                    match delete_tag_frame(&mut tag, frame) {
-                        Ok(_) => {
-                            tag_was_modified = true;
-                        },
-                        Err(e) => {
-                            eprintln!("rsid3: {e}");
-                            return ExitCode::FAILURE;
-                        },
-                    }
-                },
-                Action::Convert(opt) => {
-                    match convert_tag(&mut tag, *opt) {
-                        Ok(modified) => {
-                            tag_was_modified |= modified;
-                        },
-                        Err(e) => {
-                            eprintln!("rsid3: {e}");
-                            return ExitCode::FAILURE;
-                        },
-                    }
-                },
-                Action::Purge(opt) => {
-                    if match opt {
-                        PurgeOpt::Id3v22 => tag.version() == Version::Id3v22,
-                        PurgeOpt::Id3v23 => tag.version() == Version::Id3v23,
-                        PurgeOpt::Id3v24 => tag.version() == Version::Id3v24,
-                        PurgeOpt::All => true,
-                    } {
-                        match id3::v1v2::remove_from_path(fpath) {
+                        }
+                    },
+                    Action::Set(frame) => {
+                        match set_tag_frame(&mut tag, frame.clone()) {
                             Ok(_) => {
                                 tag_was_modified = true;
                             },
                             Err(e) => {
-                                eprintln!("rsid3: Failed to purge the tag of '{fpath}': {e}");
+                                eprintln!("rsid3: {e}");
+                                return ExitCode::FAILURE;
                             },
                         }
-                    }
-                },
+                    },
+                    Action::Delete(frame) => {
+                        match delete_tag_frame(&mut tag, frame) {
+                            Ok(_) => {
+                                tag_was_modified = true;
+                            },
+                            Err(e) => {
+                                eprintln!("rsid3: {e}");
+                                return ExitCode::FAILURE;
+                            },
+                        }
+                    },
+                    Action::Convert(opt) => {
+                        match convert_tag(&mut tag, *opt) {
+                            Ok(modified) => {
+                                tag_was_modified |= modified;
+                            },
+                            Err(e) => {
+                                eprintln!("rsid3: {e}");
+                                return ExitCode::FAILURE;
+                            },
+                        }
+                    },
+                    Action::Purge(opt) => {
+                        if match opt {
+                            PurgeOpt::Id3v22 => tag.version() == Version::Id3v22,
+                            PurgeOpt::Id3v23 => tag.version() == Version::Id3v23,
+                            PurgeOpt::Id3v24 => tag.version() == Version::Id3v24,
+                            PurgeOpt::All => true,
+                        } {
+                            match id3::v1v2::remove_from_path(fpath) {
+                                Ok(_) => {
+                                    tag = Tag::with_version(Version::Id3v24);
+                                    tag_was_modified = false;
+                                },
+                                Err(e) => {
+                                    eprintln!("rsid3: Failed to purge the tag of '{fpath}': {e}");
+                                },
+                            }
+                        }
+                    },
+                }
+            }
+
+            // Write the tag back to the file, if it was modified
+            if tag_was_modified {
+                if let Err(e) = try_write_tag(&tag, &fpath, tag.version()) {
+                    eprintln!("rsid3: {e}");
+                    return ExitCode::FAILURE;
+                }
             }
         }
-
-        // Write the tag back to the file, if it was modified
-        if tag_was_modified {
-            if let Err(e) = try_write_tag(&tag, &fpath, tag.version()) {
-                eprintln!("rsid3: {e}");
-                return ExitCode::FAILURE;
-            }
-        }
-    }
-
-    if cli.actions.is_empty() {
+    } else /* if cli.actions.is_empty() */ {
         if cli.files.is_empty() {
             Cli::print_usage();
             return ExitCode::FAILURE;
