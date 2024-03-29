@@ -8,8 +8,10 @@ use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
 pub struct Cli {
     pub help: bool,
     pub list_frames: bool,
-    pub delimiter: Option<String>,
-    pub null_delimited: bool,
+    pub frame_sep: Option<String>,
+    pub file_sep: Option<String>,
+    pub frame_sep_null: bool,
+    pub file_sep_null: bool,
     pub actions: Vec<Action>,
     pub files: Vec<String>,
 }
@@ -55,8 +57,10 @@ impl Cli {
         println!("Options:");
         println!("  -h, --help               Show this help and exit.");
         println!("  -L, --list-frames        List all supported frames.");
-        println!("  -d SEP, --delimiter SEP  Separate multiple printed values with SEP.");
-        println!("  -0, --null-delimited     Separate multiple printed values with the null byte.");
+        println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \\n).");
+        println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \\n).");
+        println!("  -0d, --frame-sep-null    Separate printed frames with the null byte.");
+        println!("  -0D, --file-sep-null     Separate printed files with the null byte.");
         println!();
         println!("  --FRAME                  Print the value of FRAME.");
         println!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX).");
@@ -208,8 +212,10 @@ impl Cli {
         let args: Vec<String> = args().collect();
         let mut help = false;
         let mut list_frames = false;
-        let mut delimiter: Option<String> = None;
-        let mut null_delimited = false;
+        let mut frame_sep: Option<String> = None;
+        let mut file_sep: Option<String> = None;
+        let mut frame_sep_null = false;
+        let mut file_sep_null = false;
         let mut actions = vec![];
         let mut i = 1;
         while i < args.len() {
@@ -217,17 +223,28 @@ impl Cli {
             match arg {
                 "-h" | "--help" => { help = true; },
                 "-L" | "--list-frames" => { list_frames = true; },
-                "-d" | "--delimiter" => {
+                "-d" | "--frame-sep" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after --delimiter"));
+                        return Err(anyhow!("1 argument expected after --frame-sep"));
                     }
-                    delimiter = Some(args[i + 1].clone());
+                    frame_sep = Some(args[i + 1].clone());
                     i += 1;
                 },
                 str if str.starts_with("-d") => {
-                    delimiter = Some(((args[i])[2..]).to_string());
+                    frame_sep = Some(((args[i])[2..]).to_string());
                 },
-                "-0" | "--null-delimited" => { null_delimited = true; },
+                "-D" | "--file-sep" => {
+                    if i + 1 >= args.len() {
+                        return Err(anyhow!("1 argument expected after --file-sep"));
+                    }
+                    file_sep = Some(args[i + 1].clone());
+                    i += 1;
+                },
+                str if str.starts_with("-D") => {
+                    file_sep = Some(((args[i])[2..]).to_string());
+                },
+                "-0d" | "--frame-sep-null" => { frame_sep_null = true; },
+                "-0D" | "--file-sep-null" => { file_sep_null = true; },
                 "--" => { i += 1; break; },
 
                 "--COMM" => {
@@ -444,8 +461,10 @@ impl Cli {
         Ok(Cli {
             help,
             list_frames,
-            delimiter,
-            null_delimited,
+            frame_sep,
+            file_sep,
+            frame_sep_null,
+            file_sep_null,
             actions,
             files,
         })
