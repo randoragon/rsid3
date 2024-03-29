@@ -75,6 +75,11 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
+    if cli.version {
+        Cli::print_version();
+        return ExitCode::SUCCESS;
+    }
+
     if cli.list_frames {
         Cli::print_all_frames();
         return ExitCode::SUCCESS;

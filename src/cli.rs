@@ -7,6 +7,7 @@ use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
 #[derive(Debug)]
 pub struct Cli {
     pub help: bool,
+    pub version: bool,
     pub list_frames: bool,
     pub frame_sep: Option<String>,
     pub file_sep: Option<String>,
@@ -56,6 +57,7 @@ impl Cli {
         println!();
         println!("Options:");
         println!("  -h, --help               Show this help and exit.");
+        println!("  -V, --version            Print version information.");
         println!("  -L, --list-frames        List all supported frames.");
         println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \\n).");
         println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \\n).");
@@ -93,6 +95,14 @@ impl Cli {
         println!("Convert options cannot be combined, as it wouldn't make sense. If no convert");
         println!("options are passed, rsid3 keeps the existing tag versions, or defaults to ID3v2.4");
         println!("when creating new tags from scratch.");
+    }
+
+    /// Prints the current version of rsid3.
+    pub fn print_version() {
+        println!("rsid3 {}-{}\nBuilt on {}",
+            env!("RSID3_VERSION_STR"),
+            env!("VERGEN_GIT_SHA").chars().take(8).collect::<String>(),
+            env!("VERGEN_BUILD_TIMESTAMP"));
     }
 
     /// Prints the available frames.
@@ -211,6 +221,7 @@ impl Cli {
     pub fn parse_args() -> Result<Self> {
         let args: Vec<String> = args().collect();
         let mut help = false;
+        let mut version = false;
         let mut list_frames = false;
         let mut frame_sep: Option<String> = None;
         let mut file_sep: Option<String> = None;
@@ -222,6 +233,7 @@ impl Cli {
             let arg = args[i].as_str();
             match arg {
                 "-h" | "--help" => { help = true; },
+                "-V" | "--version" => { version = true; },
                 "-L" | "--list-frames" => { list_frames = true; },
                 "-d" | "--frame-sep" => {
                     if i + 1 >= args.len() {
@@ -460,6 +472,7 @@ impl Cli {
 
         Ok(Cli {
             help,
+            version,
             list_frames,
             frame_sep,
             file_sep,
