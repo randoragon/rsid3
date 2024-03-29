@@ -10,16 +10,22 @@ pub struct Cli {
     pub list_frames: bool,
     pub delimiter: Option<String>,
     pub null_delimited: bool,
-    pub get_frames: Vec<Frame>,
-    pub set_frames: Vec<Frame>,
-    pub del_frames: Vec<Frame>,
-    pub convert_opts: Vec<ConvertOpt>,
-    pub purge_opts: Vec<PurgeOpt>,
+    pub actions: Vec<Action>,
     pub files: Vec<String>,
 }
 
-/// Represents one of convert options passed to the program on the command line.
+/// Represents a single action passed by the user on the command line.
 #[derive(Debug)]
+pub enum Action {
+    Print(Frame),
+    Set(Frame),
+    Delete(Frame),
+    Convert(ConvertOpt),
+    Purge(PurgeOpt),
+}
+
+/// Represents one of convert options passed to the program on the command line.
+#[derive(Debug, Copy, Clone)]
 pub enum ConvertOpt {
     Id3v22,
     Id3v23,
@@ -30,7 +36,7 @@ pub enum ConvertOpt {
 }
 
 /// Represents one of purge options passed to the program on the command line.
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum PurgeOpt {
     Id3v22,
     Id3v23,
@@ -204,11 +210,7 @@ impl Cli {
         let mut list_frames = false;
         let mut delimiter: Option<String> = None;
         let mut null_delimited = false;
-        let mut get_frames = vec![];
-        let mut set_frames = vec![];
-        let mut del_frames = vec![];
-        let mut convert_opts = vec![];
-        let mut purge_opts = vec![];
+        let mut actions = vec![];
         let mut i = 1;
         while i < args.len() {
             let arg = args[i].as_str();
@@ -237,7 +239,7 @@ impl Cli {
                         lang: args[i + 2].clone(),
                         text: "".to_string(),
                     };
-                    get_frames.push(Frame::with_content("COMM", Content::Comment(comment)));
+                    actions.push(Action::Print(Frame::with_content("COMM", Content::Comment(comment))));
                     i += 2;
                 }
                 "--USLT" => {
@@ -249,7 +251,7 @@ impl Cli {
                         lang: args[i + 2].clone(),
                         text: "".to_string(),
                     };
-                    get_frames.push(Frame::with_content("USLT", Content::Lyrics(lyrics)));
+                    actions.push(Action::Print(Frame::with_content("USLT", Content::Lyrics(lyrics))));
                     i += 2;
                 },
 
@@ -261,7 +263,7 @@ impl Cli {
                         value: "".to_string(),
                         description: args[i + 1].clone(),
                     };
-                    get_frames.push(Frame::with_content("TXXX", Content::ExtendedText(extended_text)));
+                    actions.push(Action::Print(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
                     i += 1;
                 },
                 "--WXXX" => {
@@ -272,13 +274,13 @@ impl Cli {
                         link: "".to_string(),
                         description: args[i + 1].clone(),
                     };
-                    get_frames.push(Frame::with_content("WXXX", Content::ExtendedLink(extended_link)));
+                    actions.push(Action::Print(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
                     i += 1;
                 },
 
                 // All parameterless getters
                 str if Cli::is_getter_arg(str) => {
-                    get_frames.push(Frame::text(&str[2..], ""));
+                    actions.push(Action::Print(Frame::text(&str[2..], "")));
                 },
 
                 "--COMM=" => {
@@ -290,7 +292,7 @@ impl Cli {
                         lang: args[i + 2].clone(),
                         text: args[i + 3].clone(),
                     };
-                    set_frames.push(Frame::with_content("COMM", Content::Comment(comment)));
+                    actions.push(Action::Set(Frame::with_content("COMM", Content::Comment(comment))));
                     i += 3;
                 }
                 "--USLT=" => {
@@ -302,7 +304,7 @@ impl Cli {
                         lang: args[i + 2].clone(),
                         text: args[i + 3].clone(),
                     };
-                    set_frames.push(Frame::with_content("USLT", Content::Lyrics(lyrics)));
+                    actions.push(Action::Set(Frame::with_content("USLT", Content::Lyrics(lyrics))));
                     i += 3;
                 }
 
@@ -314,7 +316,7 @@ impl Cli {
                         description: args[i + 1].clone(),
                         value: args[i + 2].clone(),
                     };
-                    set_frames.push(Frame::with_content("TXXX", Content::ExtendedText(extended_text)));
+                    actions.push(Action::Set(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
                     i += 2;
                 },
                 "--WXXX=" => {
@@ -325,7 +327,7 @@ impl Cli {
                         description: args[i + 1].clone(),
                         link: args[i + 2].clone(),
                     };
-                    set_frames.push(Frame::with_content("WXXX", Content::ExtendedLink(extended_link)));
+                    actions.push(Action::Set(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
                     i += 2;
                 },
 
@@ -335,7 +337,7 @@ impl Cli {
                         return Err(anyhow!("1 argument expected after {str}"));
                     }
                     let text = args[i + 1].clone();
-                    set_frames.push(Frame::text(&str[2..(str.len() - 1)], text));
+                    actions.push(Action::Set(Frame::text(&str[2..(str.len() - 1)], text)));
                     i += 1;
                 },
 
@@ -348,7 +350,7 @@ impl Cli {
                         lang: args[i + 2].clone(),
                         text: "".to_string(),
                     };
-                    del_frames.push(Frame::with_content("COMM", Content::Comment(comment)));
+                    actions.push(Action::Delete(Frame::with_content("COMM", Content::Comment(comment))));
                     i += 2;
                 }
                 "--USLT-" => {
@@ -360,7 +362,7 @@ impl Cli {
                         lang: args[i + 2].clone(),
                         text: "".to_string(),
                     };
-                    del_frames.push(Frame::with_content("USLT", Content::Lyrics(lyrics)));
+                    actions.push(Action::Delete(Frame::with_content("USLT", Content::Lyrics(lyrics))));
                     i += 2;
                 },
 
@@ -372,7 +374,7 @@ impl Cli {
                         value: "".to_string(),
                         description: args[i + 1].clone(),
                     };
-                    del_frames.push(Frame::with_content("TXXX", Content::ExtendedText(extended_text)));
+                    actions.push(Action::Delete(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
                     i += 1;
                 },
                 "--WXXX-" => {
@@ -383,46 +385,46 @@ impl Cli {
                         link: "".to_string(),
                         description: args[i + 1].clone(),
                     };
-                    del_frames.push(Frame::with_content("WXXX", Content::ExtendedLink(extended_link)));
+                    actions.push(Action::Delete(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
                     i += 1;
                 },
 
                 // All parameterless delete args
                 str if Cli::is_delete_arg(str) => {
-                    del_frames.push(Frame::text(&str[2..(str.len() - 1)], ""));
+                    actions.push(Action::Delete(Frame::text(&str[2..(str.len() - 1)], "")));
                 },
 
                 "--id3v2.2" => {
-                    convert_opts.push(ConvertOpt::Id3v22);
+                    actions.push(Action::Convert(ConvertOpt::Id3v22));
                 },
                 "--id3v2.3" => {
-                    convert_opts.push(ConvertOpt::Id3v23);
+                    actions.push(Action::Convert(ConvertOpt::Id3v23));
                 },
                 "--id3v2.4" => {
-                    convert_opts.push(ConvertOpt::Id3v24);
+                    actions.push(Action::Convert(ConvertOpt::Id3v24));
                 },
 
                 "--force-id3v2.2" => {
-                    convert_opts.push(ConvertOpt::Id3v22Force);
+                    actions.push(Action::Convert(ConvertOpt::Id3v22Force));
                 },
                 "--force-id3v2.3" => {
-                    convert_opts.push(ConvertOpt::Id3v23Force);
+                    actions.push(Action::Convert(ConvertOpt::Id3v23Force));
                 },
                 "--force-id3v2.4" => {
-                    convert_opts.push(ConvertOpt::Id3v24Force);
+                    actions.push(Action::Convert(ConvertOpt::Id3v24Force));
                 },
 
                 "--purge-id3v2.2" => {
-                    purge_opts.push(PurgeOpt::Id3v22);
+                    actions.push(Action::Purge(PurgeOpt::Id3v22));
                 },
                 "--purge-id3v2.3" => {
-                    purge_opts.push(PurgeOpt::Id3v23);
+                    actions.push(Action::Purge(PurgeOpt::Id3v23));
                 },
                 "--purge-id3v2.4" => {
-                    purge_opts.push(PurgeOpt::Id3v24);
+                    actions.push(Action::Purge(PurgeOpt::Id3v24));
                 },
                 "--purge-all" => {
-                    purge_opts.push(PurgeOpt::All);
+                    actions.push(Action::Purge(PurgeOpt::All));
                 },
 
                 str => {
@@ -444,11 +446,7 @@ impl Cli {
             list_frames,
             delimiter,
             null_delimited,
-            get_frames,
-            set_frames,
-            del_frames,
-            convert_opts,
-            purge_opts,
+            actions,
             files,
         })
     }

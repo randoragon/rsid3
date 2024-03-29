@@ -52,8 +52,8 @@ pub fn get_content_uslt(frame: &Frame) -> Result<&Lyrics> {
     }
 }
 
-/// Get text contents from a tag, based on a frame query.
-pub fn print_text_from_tag(tag: &Tag, frame: &Frame) -> Result<()> {
+/// Attempts to find a tag frame matching a query and prints its contents as text.
+pub fn print_tag_frame_query(tag: &Tag, frame: &Frame) -> Result<()> {
     match frame.id() {
         "TXXX" => {
             let desc_query = &get_content_txxx(frame)?.description;
@@ -153,7 +153,7 @@ pub fn print_text_from_tag(tag: &Tag, frame: &Frame) -> Result<()> {
     }
 }
 
-/// Pretty-prints a single frame.
+/// Pretty-prints a single frame's name and contents.
 pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
     match frame.id() {
         "TXXX" => {
@@ -182,6 +182,40 @@ pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
             println!("{}: {}", frame.id(), frame.content());
         },
     }
+    Ok(())
+}
+
+/// Deletes a frame matching a query from a tag.
+pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame) -> Result<()> {
+    let mut found = false;
+
+    // Not the most efficient approach, but the id3 crate does not seem to provide a nicer way
+    for removed_frame in tag.remove(frame.id()) {
+        if frames_query_equal(frame, &removed_frame)? {
+            // Remove this frame (i.e. don't add it back)
+            found = true
+        } else {
+            tag.add_frame(removed_frame);
+        }
+    }
+
+    if !found {
+        let frame_str = match frame.id() {
+            "WXXX" => format!("{}[{}]", frame.id(), get_content_wxxx(frame)?.description),
+            "TXXX" => format!("{}[{}]", frame.id(), get_content_txxx(frame)?.description),
+            "COMM" => {
+                let comment = get_content_comm(frame)?;
+                format!("{}[{}]({})", frame.id(), comment.description, comment.lang)
+            },
+            "USLT" => {
+                let lyrics = get_content_uslt(frame)?;
+                format!("{}[{}]({})", frame.id(), lyrics.description, lyrics.lang)
+            },
+            x => x.to_string(),
+        };
+        return Err(anyhow!("Could not delete {frame_str}: frame not found"));
+    }
+
     Ok(())
 }
 
@@ -227,18 +261,33 @@ pub fn frames_query_equal(frame1: &Frame, frame2: &Frame) -> Result<bool, anyhow
     Ok(true)
 }
 
-/// Forcefully convert a tag to a target ID3 version. Any frames that do not exist in the
-/// target representation are simply omitted from the result.
-pub fn force_convert_tag(tag: &Tag, target_version: Version) -> Tag {
+/// Create a new tag of the given version, from an existing tag.
+/// If `force` is true, any frames that cannot exist in the target version are simply omitted from
+/// the result. Otherwise, an error is returned.
+pub fn tag_with_version_from(tag: &Tag, target_version: Version, force: bool) -> Result<Tag> {
     if tag.version() == target_version {
-        return tag.clone();
+        return Ok(tag.clone());
     }
 
     let mut new_tag = Tag::with_version(target_version);
-    for frame in tag.frames().filter(|x| x.id_for_version(target_version).is_some()) {
-        new_tag.add_frame(frame.clone());
+    if force {
+        for frame in tag.frames().filter(|x| x.id_for_version(target_version).is_some()) {
+            new_tag.add_frame(frame.clone());
+        }
+    } else {
+        let incompatible_frames = tag.frames()
+            .filter(|&x| x.id_for_version(target_version).is_none())
+            .map(|x| x.id())
+            .collect::<Vec<&str>>();
+        if !incompatible_frames.is_empty() {
+            return Err(anyhow!("Cannot convert tag from {} to {}: Incompatible frames: {}",
+                tag.version(), target_version, incompatible_frames.join(", ")));
+        }
+        for frame in tag.frames() {
+            new_tag.add_frame(frame.clone());
+        }
     }
-    new_tag
+    Ok(new_tag)
 }
 
 /// Attempt to write a tag to a file. `Tag.write_to_path()` does this, but it has the side-effect
