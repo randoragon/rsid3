@@ -50,7 +50,7 @@ pub enum PurgeOpt {
 impl Cli {
     /// Prints how to use the program.
     pub fn print_usage() {
-        println!("Usage:  rsid3 [OPTION] FILE...");
+        println!("Usage:  rsid3 [OPTION] [--] FILE...");
         println!();
         println!("Reads or writes ID3v2 tags in mp3 files.");
         println!("Supported standards: ID3v2.2, ID3v2.3, ID3v2.4.");
