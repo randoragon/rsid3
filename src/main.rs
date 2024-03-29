@@ -17,7 +17,7 @@ fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
                 eprintln!("{}: No tag found", fpath.as_ref().display());
                 return Ok(());
             },
-            _ => return Err(anyhow!("Failed to read tags from file '{}': {e}", fpath.as_ref().display())),
+            _ => return Err(anyhow!("Failed to read tag from file '{}': {e}", fpath.as_ref().display())),
         }
     };
 
@@ -112,7 +112,7 @@ fn main() -> ExitCode {
                         Tag::with_version(Version::Id3v24)
                     },
                     _ => {
-                        eprintln!("rsid3: Failed to read tags from file '{fpath}': {e}");
+                        eprintln!("rsid3: Failed to read tag from file '{fpath}': {e}");
                         break;
                     },
                 }
