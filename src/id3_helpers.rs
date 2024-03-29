@@ -170,7 +170,7 @@ pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
         },
         "USLT" => {
             let lyrics = get_content_uslt(frame)?;
-            println!("{}[{}][{}]: {}", frame.id(), lyrics.description, lyrics.lang, lyrics.text);
+            println!("{}[{}]({}): {}", frame.id(), lyrics.description, lyrics.lang, lyrics.text);
         },
         str if str.starts_with('T') => {
             println!("{}: {}", frame.id(), get_content_text(frame)?);
