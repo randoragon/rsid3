@@ -80,15 +80,24 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
-    // Define the delimiter
-    if cli.delimiter.is_some() && cli.null_delimited {
-        eprintln!("rsid3: --delimiter and --null-delimited options are mutually exclusive");
+    // Define the separators
+    if cli.frame_sep.is_some() && cli.frame_sep_null {
+        eprintln!("rsid3: --frame-sep and --frame-sep-null options are mutually exclusive");
         return ExitCode::FAILURE;
     }
-    let delimiter = if cli.null_delimited {
+    let frame_sep = if cli.frame_sep_null {
         '\0'.to_string()
     } else {
-        cli.delimiter.clone().unwrap_or('\n'.to_string())
+        cli.frame_sep.clone().unwrap_or('\n'.to_string())
+    };
+    if cli.file_sep.is_some() && cli.file_sep_null {
+        eprintln!("rsid3: --file-sep and --file-sep-null options are mutually exclusive");
+        return ExitCode::FAILURE;
+    }
+    let file_sep = if cli.file_sep_null {
+        '\0'.to_string()
+    } else {
+        cli.file_sep.clone().unwrap_or('\n'.to_string())
     };
 
     // Handle all actions
@@ -115,11 +124,11 @@ fn main() -> ExitCode {
                 match action {
                     Action::Print(frame) => {
                         if !is_first_frame_print {
-                            print!("{delimiter}");
+                            print!("{frame_sep}");
                         } else {
                             is_first_frame_print = false;
                             if !is_first_file_print {
-                                println!();
+                                print!("{file_sep}");
                             } else {
                                 is_first_file_print = false;
                             }
