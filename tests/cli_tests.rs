@@ -6,19 +6,19 @@ use regex::bytes::Regex;
 fn prints_help() {
     let output = rsid3_run(&["--help"]);
     assert!(output.status.success());
-    assert!(output.stdout.starts_with("Usage:".as_bytes()));
+    assert!(output.stdout.starts_with(b"Usage:"));
 
     let output = rsid3_run(&["-h"]);
     assert!(output.status.success());
-    assert!(output.stdout.starts_with("Usage:".as_bytes()));
+    assert!(output.stdout.starts_with(b"Usage:"));
 }
 
 #[test]
 fn prints_version() {
     let expected_prefix = &[
-        "rsid3 ".as_bytes(),
+        b"rsid3 ",
         env!("RSID3_VERSION_STR").as_bytes(),
-        "-".as_bytes(),
+        b"-",
         env!("VERGEN_GIT_SHA").chars().take(8).collect::<String>().as_bytes(),
     ].concat();
 
@@ -50,6 +50,6 @@ fn gets_empty() {
     let output = rsid3_run(&[file.path()]);
     assert_eq!(output.stderr, [
         file.path().as_os_str().as_encoded_bytes(),
-        ": No tag found\n".as_bytes(),
+        b": No tag found\n",
     ].concat());
 }
