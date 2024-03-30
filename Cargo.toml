@@ -16,7 +16,6 @@ build = "build.rs"
 [dependencies]
 anyhow = "1.0.80"
 id3 = "1.16.2"
-tempfile = "3.10.1"
 
 [build-dependencies]
 anyhow = "1.0.80"
@@ -24,3 +23,5 @@ vergen = { version = "8.3.1", features = ["build", "git", "gitcl"] }
 
 [dev-dependencies]
 walkdir = "2.5.0"
+tempfile = "3.10.1"
+regex = "1.10.4"

@@ -15,6 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 mod common;
 use common::*;
+use regex::bytes::Regex;
 
 #[test]
 fn prints_help() {
@@ -43,6 +44,19 @@ fn prints_version() {
     let output = rsid3_run(&["-V"]);
     assert!(output.status.success());
     assert!(output.stdout.starts_with(expected_prefix));
+}
+
+#[test]
+fn prints_supported_frames() {
+    let re = Regex::new(
+        r"(?s)ID3 standard.*2\.2, 2\.3, 2\.4.*COMM.*TIT2.*r/w.*http://id3.org/"
+    ).unwrap();
+
+    let output = rsid3_run(&["--list-frames"]);
+    assert!(re.is_match(&output.stdout));
+
+    let output = rsid3_run(&["-L"]);
+    assert!(re.is_match(&output.stdout));
 }
 
 #[test]
