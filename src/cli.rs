@@ -99,7 +99,7 @@ impl Cli {
 
     /// Prints the current version of rsid3.
     pub fn print_version() {
-        println!("rsid3 {}-{}\nBuilt on {}",
+        println!("rsid3 {}+{}\nBuilt on {}",
             env!("CARGO_PKG_VERSION"),
             env!("VERGEN_GIT_SHA").chars().take(8).collect::<String>(),
             env!("VERGEN_BUILD_TIMESTAMP"));
