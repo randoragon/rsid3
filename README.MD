@@ -1,6 +1,6 @@
 # rsid3
 
-A simple command-line ID3v2 tag editor designed with scripting in mind.
+A simple, command line ID3v2 tag editor designed for scripting.
 
 ## Features
 

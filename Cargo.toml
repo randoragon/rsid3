@@ -1,7 +1,14 @@
 [package]
 name = "rsid3"
-version = "0.1.0"
+version = "1.0.0-alpha"
+authors = ["Randoragon <randoragongamedev@gmail.com"]
 edition = "2021"
+description = "A simple, command line ID3v2 tag editor designed for scripting."
+readme = "README.MD"
+repository = "https://github.com/randoragon/rsid3"
+license = "GPL-2.0-only"
+keywords = ["id3v2", "cli", "command", "music", "files"]
+categories = ["command-line-utilities", "filesystem", "encoding"]
 build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

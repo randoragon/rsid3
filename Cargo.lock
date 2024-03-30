@@ -155,7 +155,7 @@ dependencies = [
 
 [[package]]
 name = "rsid3"
-version = "0.1.0"
+version = "1.0.0-alpha"
 dependencies = [
  "anyhow",
  "id3",
