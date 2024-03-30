@@ -1,5 +1,6 @@
 mod common;
 use common::*;
+use regex::bytes::Regex;
 
 #[test]
 fn prints_help() {
@@ -28,6 +29,19 @@ fn prints_version() {
     let output = rsid3_run(&["-V"]);
     assert!(output.status.success());
     assert!(output.stdout.starts_with(expected_prefix));
+}
+
+#[test]
+fn prints_supported_frames() {
+    let re = Regex::new(
+        r"(?s)Read-write frames.*COMM.*TIT2.*Read-only frames.*APIC.*USER"
+    ).unwrap();
+
+    let output = rsid3_run(&["--list-frames"]);
+    assert!(re.is_match(&output.stdout));
+
+    let output = rsid3_run(&["-L"]);
+    assert!(re.is_match(&output.stdout));
 }
 
 #[test]
