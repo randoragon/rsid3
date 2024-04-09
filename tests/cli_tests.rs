@@ -53,3 +53,52 @@ fn gets_empty() {
         b": No tag found\n",
     ].concat());
 }
+
+#[test]
+fn prints_all_frames() {
+    let file = TestFile::tit2();
+    let output = rsid3_run(&[file.path()]);
+    assert_eq!(output.stdout, [
+        file.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.4, 1 frame:\n",
+        b"TIT2: Sample Title\n",
+    ].concat());
+
+    let file = TestFile::txxx();
+    let output = rsid3_run(&[file.path()]);
+    assert_eq!(output.stdout, [
+        file.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.4, 1 frame:\n",
+        b"TXXX[Description]: Sample Content\n",
+    ].concat());
+
+    let file = TestFile::comm();
+    let output = rsid3_run(&[file.path()]);
+    assert_eq!(output.stdout, [
+        file.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.4, 1 frame:\n",
+        b"COMM[Description](eng): Sample Content\n",
+    ].concat());
+
+    let file = TestFile::nirvana();
+    let re_artist = Regex::new(r"(?m)^TPE1: Nirvana$").unwrap();
+    let re_album_artist = Regex::new(r"(?m)^TPE2: Nirvana$").unwrap();
+    let re_album = Regex::new(r"(?m)^TALB: Nevermind$").unwrap();
+    let re_title = Regex::new(r"(?m)^TIT2: Smells Like Teen Spirit$").unwrap();
+    let re_date = Regex::new(r"(?m)^TDOR: 1991$").unwrap();
+    let re_track = Regex::new(r"(?m)^TRCK: 01/13$").unwrap();
+    let re_genre = Regex::new(r"(?m)^TCON: Grunge Rock$").unwrap();
+    let output = rsid3_run(&[file.path()]);
+    assert!(re_artist.is_match(&output.stdout));
+    assert!(re_album_artist.is_match(&output.stdout));
+    assert!(re_album.is_match(&output.stdout));
+    assert!(re_title.is_match(&output.stdout));
+    assert!(re_date.is_match(&output.stdout));
+    assert!(re_track.is_match(&output.stdout));
+    assert!(re_genre.is_match(&output.stdout));
+    assert!(output.stdout.starts_with(&[
+        file.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.4, 7 frames:\n",
+    ].concat()));
+    assert_eq!(output.stdout.iter().filter(|&&x| x == b'\n').count(), 8);
+}
