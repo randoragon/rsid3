@@ -130,3 +130,15 @@ fn prints_single_frame() {
     let output = rsid3_run(&[OsStr::new("--TRCK"), fpath]);
     assert_eq!(output.stdout, b"01/13");
 }
+
+#[test]
+fn prints_missing_frame() {
+    let file = TestFile::tit2();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TPE1"), fpath]);
+    assert!(output.stdout.is_empty());
+    let output = rsid3_run(&[OsStr::new("--TXXX"), OsStr::new("abc"), fpath]);
+    assert!(output.stdout.is_empty());
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("abc"), OsStr::new("eng"), fpath]);
+    assert!(output.stdout.is_empty());
+}
