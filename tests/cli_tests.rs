@@ -1,6 +1,7 @@
 mod common;
 use common::*;
 use regex::bytes::Regex;
+use std::ffi::OsStr;
 
 #[test]
 fn prints_help() {
@@ -101,4 +102,31 @@ fn prints_all_frames() {
         b": ID3v2.4, 7 frames:\n",
     ].concat()));
     assert_eq!(output.stdout.iter().filter(|&&x| x == b'\n').count(), 8);
+}
+
+#[test]
+fn prints_single_frame() {
+    let file = TestFile::tit2();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let file = TestFile::txxx();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TXXX"), OsStr::new("Description"), fpath]);
+    assert_eq!(output.stdout, b"Sample Content");
+
+    let file = TestFile::comm();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert_eq!(output.stdout, b"Sample Content");
+
+    let file = TestFile::nirvana();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert_eq!(output.stdout, b"Smells Like Teen Spirit");
+    let output = rsid3_run(&[OsStr::new("--TPE1"), fpath]);
+    assert_eq!(output.stdout, b"Nirvana");
+    let output = rsid3_run(&[OsStr::new("--TRCK"), fpath]);
+    assert_eq!(output.stdout, b"01/13");
 }
