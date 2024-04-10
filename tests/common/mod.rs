@@ -12,6 +12,8 @@ const SAMPLE_TIT2: &str = "tests/samples/sample_TIT2.mp3";
 const SAMPLE_TXXX: &str = "tests/samples/sample_TXXX.mp3";
 /// Path to a sample MP3 file with a COMM[Description](eng) "Sample Content" tag.
 const SAMPLE_COMM: &str = "tests/samples/sample_COMM.mp3";
+/// Path to a sample MP3 file with multiple frames describing Smells Like Teen Spirit.
+const SAMPLE_NIRVANA: &str = "tests/samples/sample_nirvana.mp3";
 /// Path to the directory for storing temporary files constructed and operated on in integration tests.
 const SAMPLES_TMPDIR: &str = "tests/samples/tmp/";
 /// Path to the rsid3 executable.
@@ -40,6 +42,7 @@ impl TestFile {
     test_file_from_sample!(tit2, SAMPLE_TIT2);
     test_file_from_sample!(txxx, SAMPLE_TXXX);
     test_file_from_sample!(comm, SAMPLE_COMM);
+    test_file_from_sample!(nirvana, SAMPLE_NIRVANA);
 
     /// Returns the path to the test file.
     pub fn path(&self) -> &Path {
