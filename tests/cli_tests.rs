@@ -39,9 +39,11 @@ fn prints_supported_frames() {
     ).unwrap();
 
     let output = rsid3_run(&["--list-frames"]);
+    assert!(output.status.success());
     assert!(re.is_match(&output.stdout));
 
     let output = rsid3_run(&["-L"]);
+    assert!(output.status.success());
     assert!(re.is_match(&output.stdout));
 }
 
@@ -49,6 +51,7 @@ fn prints_supported_frames() {
 fn gets_empty() {
     let file = TestFile::empty();
     let output = rsid3_run(&[file.path()]);
+    assert!(output.status.success());
     assert_eq!(output.stderr, [
         file.path().as_os_str().as_encoded_bytes(),
         b": No tag found\n",
@@ -59,6 +62,7 @@ fn gets_empty() {
 fn prints_all_frames() {
     let file = TestFile::tit2();
     let output = rsid3_run(&[file.path()]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, [
         file.path().as_os_str().as_encoded_bytes(),
         b": ID3v2.4, 1 frame:\n",
@@ -67,6 +71,7 @@ fn prints_all_frames() {
 
     let file = TestFile::txxx();
     let output = rsid3_run(&[file.path()]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, [
         file.path().as_os_str().as_encoded_bytes(),
         b": ID3v2.4, 1 frame:\n",
@@ -75,6 +80,7 @@ fn prints_all_frames() {
 
     let file = TestFile::comm();
     let output = rsid3_run(&[file.path()]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, [
         file.path().as_os_str().as_encoded_bytes(),
         b": ID3v2.4, 1 frame:\n",
@@ -90,6 +96,7 @@ fn prints_all_frames() {
     let re_track = Regex::new(r"(?m)^TRCK: 01/13$").unwrap();
     let re_genre = Regex::new(r"(?m)^TCON: Grunge Rock$").unwrap();
     let output = rsid3_run(&[file.path()]);
+    assert!(output.status.success());
     assert!(re_artist.is_match(&output.stdout));
     assert!(re_album_artist.is_match(&output.stdout));
     assert!(re_album.is_match(&output.stdout));
@@ -109,25 +116,31 @@ fn prints_single_frame() {
     let file = TestFile::tit2();
     let fpath = file.path().as_os_str();
     let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, b"Sample Title");
 
     let file = TestFile::txxx();
     let fpath = file.path().as_os_str();
     let output = rsid3_run(&[OsStr::new("--TXXX"), OsStr::new("Description"), fpath]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, b"Sample Content");
 
     let file = TestFile::comm();
     let fpath = file.path().as_os_str();
     let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, b"Sample Content");
 
     let file = TestFile::nirvana();
     let fpath = file.path().as_os_str();
     let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, b"Smells Like Teen Spirit");
     let output = rsid3_run(&[OsStr::new("--TPE1"), fpath]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, b"Nirvana");
     let output = rsid3_run(&[OsStr::new("--TRCK"), fpath]);
+    assert!(output.status.success());
     assert_eq!(output.stdout, b"01/13");
 }
 
