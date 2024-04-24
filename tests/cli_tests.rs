@@ -48,7 +48,7 @@ fn prints_supported_frames() {
 }
 
 #[test]
-fn gets_empty() {
+fn prints_no_tag() {
     let file = TestFile::empty();
     let output = rsid3_run(&[file.path()]);
     assert!(output.status.success());
