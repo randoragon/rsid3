@@ -174,3 +174,36 @@ fn prints_missing_frame() {
     assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
     assert!(output.stdout.is_empty());
 }
+
+#[test]
+fn prints_multiple_frames() {
+    let file = TestFile::tit2();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
+    assert_eq!(output.stdout, b"Sample Title\n\n");
+
+    let file = TestFile::nirvana();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Smells Like Teen Spirit\nNirvana\nNevermind");
+}
+
+#[test]
+fn prints_multiple_frames_with_delimiter() {
+    let file = TestFile::tit2();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("-d,"), OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
+    assert_eq!(output.stdout, b"Sample Title,,");
+    let output = rsid3_run(&[OsStr::new("-0d"), OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
+    assert_eq!(output.stdout, b"Sample Title\0\0");
+
+    let file = TestFile::nirvana();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), OsStr::new("-d"), OsStr::new("abc"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Smells Like Teen SpiritabcNirvanaabcNevermind");
+}
