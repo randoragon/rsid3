@@ -112,6 +112,32 @@ fn prints_all_frames() {
 }
 
 #[test]
+fn prints_all_frames_multiple_files() {
+    let file1 = TestFile::tit2();
+    let file2 = TestFile::txxx();
+    let fpath1 = file1.path().as_os_str();
+    let fpath2 = file2.path().as_os_str();
+
+    let output = rsid3_run(&[fpath1, fpath2]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, [
+        fpath1.as_encoded_bytes(), b": ID3v2.4, 1 frame:\n",
+        b"TIT2: Sample Title\n\n",
+        fpath2.as_encoded_bytes(), b": ID3v2.4, 1 frame:\n",
+        b"TXXX[Description]: Sample Content\n",
+    ].concat());
+
+    let output = rsid3_run(&[OsStr::new("--"), fpath2, fpath1]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, [
+        fpath2.as_encoded_bytes(), b": ID3v2.4, 1 frame:\n",
+        b"TXXX[Description]: Sample Content\n\n",
+        fpath1.as_encoded_bytes(), b": ID3v2.4, 1 frame:\n",
+        b"TIT2: Sample Title\n",
+    ].concat());
+}
+
+#[test]
 fn prints_single_frame() {
     let file = TestFile::tit2();
     let fpath = file.path().as_os_str();
@@ -187,4 +213,52 @@ fn prints_multiple_frames_with_delimiter() {
     let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), OsStr::new("-d"), OsStr::new("abc"), fpath]);
     assert!(output.status.success());
     assert_eq!(output.stdout, b"Smells Like Teen SpiritabcNirvanaabcNevermind");
+}
+
+#[test]
+fn prints_single_frame_multiple_files() {
+    let file1 = TestFile::tit2();
+    let file2 = TestFile::nirvana();
+    let fpath1 = file1.path().as_os_str();
+    let fpath2 = file2.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath1, fpath2]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title\nSmells Like Teen Spirit");
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath2, fpath1]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Smells Like Teen Spirit\nSample Title");
+}
+
+#[test]
+fn prints_single_frame_multiple_files_with_delimiter() {
+    let file1 = TestFile::tit2();
+    let file2 = TestFile::nirvana();
+    let fpath1 = file1.path().as_os_str();
+    let fpath2 = file2.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("-D,"), fpath1, fpath2]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title,Smells Like Teen Spirit");
+    let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("-0D"), fpath1, fpath2]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title\0Smells Like Teen Spirit");
+
+    let output = rsid3_run(&[OsStr::new("-D"), OsStr::new("abc"), OsStr::new("--TIT2"), fpath2, fpath1]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Smells Like Teen SpiritabcSample Title");
+}
+
+#[test]
+fn prints_multiple_frames_multiple_files_with_delimiters() {
+    let file1 = TestFile::tit2();
+    let file2 = TestFile::nirvana();
+    let fpath1 = file1.path().as_os_str();
+    let fpath2 = file2.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("-d,"), OsStr::new("-Dabc"), OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), fpath1, fpath2]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title,,abcSmells Like Teen Spirit,Nirvana,Nevermind");
+
+    let output = rsid3_run(&[OsStr::new("-0d"), OsStr::new("-0D"), OsStr::new("--TIT2"), OsStr::new("--TPE1"), OsStr::new("--TALB"), fpath1, fpath2]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title\0\0\0Smells Like Teen Spirit\0Nirvana\0Nevermind");
 }
