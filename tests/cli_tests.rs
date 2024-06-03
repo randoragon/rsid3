@@ -355,3 +355,20 @@ fn deletes_comm_frame() {
     assert!(output.status.success());
     assert!(output.stdout.is_empty());
 }
+
+#[test]
+fn executes_actions_in_passed_order() {
+    // Print title and then change it
+    let file = TestFile::nirvana();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2"), OsStr::new("--TIT2="), OsStr::new("new title"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Smells Like Teen Spirit");
+
+    // Change title and then print it
+    let file = TestFile::nirvana();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2="), OsStr::new("new title"), OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"new title");
+}
