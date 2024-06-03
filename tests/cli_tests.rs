@@ -301,3 +301,57 @@ fn sets_comm_frame() {
     assert!(output.status.success());
     assert_eq!(output.stdout, b"content");
 }
+
+#[test]
+fn deletes_text_frame() {
+    let file = TestFile::tit2();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2-"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+}
+
+#[test]
+fn deletes_txxx_frame() {
+    let file = TestFile::txxx();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--TXXX"), OsStr::new("Description"), fpath]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TXXX-"), OsStr::new("Description"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TXXX"), OsStr::new("Description"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+}
+
+#[test]
+fn deletes_comm_frame() {
+    let file = TestFile::comm();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM-"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+}
