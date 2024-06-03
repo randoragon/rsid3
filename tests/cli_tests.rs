@@ -262,3 +262,42 @@ fn prints_multiple_frames_multiple_files_with_delimiters() {
     assert!(output.status.success());
     assert_eq!(output.stdout, b"Sample Title\0\0\0Smells Like Teen Spirit\0Nirvana\0Nevermind");
 }
+
+#[test]
+fn sets_text_frame() {
+    let file = TestFile::empty();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TIT2="), OsStr::new("new title"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"new title");
+}
+
+#[test]
+fn sets_txxx_frame() {
+    let file = TestFile::empty();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--TXXX="), OsStr::new("desc"), OsStr::new("content"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TXXX"), OsStr::new("desc"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"content");
+}
+
+#[test]
+fn sets_comm_frame() {
+    let file = TestFile::empty();
+    let fpath = file.path().as_os_str();
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("desc"), OsStr::new("eng"), OsStr::new("content"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("desc"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"content");
+}
