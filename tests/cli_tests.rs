@@ -404,3 +404,21 @@ fn versioned_samples_contain_correctly_versioned_tags() {
         b": ID3v2.4, 2 frames:\n",
     ].concat()));
 }
+
+#[test]
+fn converts_between_tag_versions_lossless() {
+    let file2_2 = TestFile::id3v2_2();
+    let file2_3 = TestFile::id3v2_3();
+    let file2_4 = TestFile::id3v2_4();
+    let fpath2_2 = file2_2.path().as_os_str();
+    let fpath2_3 = file2_3.path().as_os_str();
+    let fpath2_4 = file2_4.path().as_os_str();
+
+    // Lossless conversions
+    let output = rsid3_run(&[OsStr::new("--id3v2.2"), fpath2_2]);
+    assert!(output.status.success());
+    let output = rsid3_run(&[OsStr::new("--id3v2.3"), fpath2_2]);
+    assert!(output.status.success());
+    let output = rsid3_run(&[OsStr::new("--id3v2.4"), fpath2_2]);
+    assert!(output.status.success());
+}
