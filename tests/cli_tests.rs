@@ -372,3 +372,35 @@ fn executes_actions_in_passed_order() {
     assert!(output.status.success());
     assert_eq!(output.stdout, b"new title");
 }
+
+#[test]
+fn versioned_samples_contain_correctly_versioned_tags() {
+    let file2_2 = TestFile::id3v2_2();
+    let file2_3 = TestFile::id3v2_3();
+    let file2_4 = TestFile::id3v2_4();
+    let fpath2_2 = file2_2.path().as_os_str();
+    let fpath2_3 = file2_3.path().as_os_str();
+    let fpath2_4 = file2_4.path().as_os_str();
+
+    // Make sure the files have correct tag version
+    let output = rsid3_run(&[fpath2_2]);
+    assert!(output.status.success());
+    assert!(output.stdout.starts_with(&[
+        file2_2.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.2, 1 frame:\n",
+    ].concat()));
+
+    let output = rsid3_run(&[fpath2_3]);
+    assert!(output.status.success());
+    assert!(output.stdout.starts_with(&[
+        file2_3.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.3, 2 frames:\n",
+    ].concat()));
+
+    let output = rsid3_run(&[fpath2_4]);
+    assert!(output.status.success());
+    assert!(output.stdout.starts_with(&[
+        file2_4.path().as_os_str().as_encoded_bytes(),
+        b": ID3v2.4, 2 frames:\n",
+    ].concat()));
+}
