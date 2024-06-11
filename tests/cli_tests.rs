@@ -423,3 +423,56 @@ fn versioned_samples_contain_correctly_versioned_tags() {
         b": ID3v2.4, 2 frames:\n",
     ].concat()));
 }
+
+#[test]
+fn converts_between_tag_versions_noop() {
+    let file2_2 = TestFile::id3v2_2();
+    let file2_3 = TestFile::id3v2_3();
+    let file2_4 = TestFile::id3v2_4();
+    let fpath2_2 = file2_2.path().as_os_str();
+    let fpath2_3 = file2_3.path().as_os_str();
+    let fpath2_4 = file2_4.path().as_os_str();
+
+    // Attempting to convert to the same version should not change the file contents whatsoever.
+    let file2_2_old_content = std::fs::read(fpath2_2).unwrap();
+    let output = rsid3_run(&[OsStr::new("--id3v2.2"), fpath2_2]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let file2_2_new_content = std::fs::read(fpath2_2).unwrap();
+    assert_eq!(file2_2_old_content, file2_2_new_content);
+
+    let file2_3_old_content = std::fs::read(fpath2_3).unwrap();
+    let output = rsid3_run(&[OsStr::new("--id3v2.3"), fpath2_3]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let file2_3_new_content = std::fs::read(fpath2_3).unwrap();
+    assert_eq!(file2_3_old_content, file2_3_new_content);
+
+    let file2_4_old_content = std::fs::read(fpath2_4).unwrap();
+    let output = rsid3_run(&[OsStr::new("--id3v2.4"), fpath2_4]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let file2_4_new_content = std::fs::read(fpath2_4).unwrap();
+    assert_eq!(file2_4_old_content, file2_4_new_content);
+
+    let file2_2_old_content = std::fs::read(fpath2_2).unwrap();
+    let output = rsid3_run(&[OsStr::new("--force-id3v2.2"), fpath2_2]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let file2_2_new_content = std::fs::read(fpath2_2).unwrap();
+    assert_eq!(file2_2_old_content, file2_2_new_content);
+
+    let file2_3_old_content = std::fs::read(fpath2_3).unwrap();
+    let output = rsid3_run(&[OsStr::new("--force-id3v2.3"), fpath2_3]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let file2_3_new_content = std::fs::read(fpath2_3).unwrap();
+    assert_eq!(file2_3_old_content, file2_3_new_content);
+
+    let file2_4_old_content = std::fs::read(fpath2_4).unwrap();
+    let output = rsid3_run(&[OsStr::new("--force-id3v2.4"), fpath2_4]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+    let file2_4_new_content = std::fs::read(fpath2_4).unwrap();
+    assert_eq!(file2_4_old_content, file2_4_new_content);
+}
