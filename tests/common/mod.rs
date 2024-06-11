@@ -14,6 +14,12 @@ const SAMPLE_TXXX: &str = "tests/samples/sample_TXXX.mp3";
 const SAMPLE_COMM: &str = "tests/samples/sample_COMM.mp3";
 /// Path to a sample MP3 file with multiple frames describing Smells Like Teen Spirit.
 const SAMPLE_NIRVANA: &str = "tests/samples/sample_nirvana.mp3";
+/// Path to a sample MP3 file with an ID3v2.2 frame.
+const SAMPLE_ID3V2_2: &str = "tests/samples/sample_id3v2.2.mp3";
+/// Path to a sample MP3 file with an ID3v2.3 frame.
+const SAMPLE_ID3V2_3: &str = "tests/samples/sample_id3v2.3.mp3";
+/// Path to a sample MP3 file with an ID3v2.4 frame.
+const SAMPLE_ID3V2_4: &str = "tests/samples/sample_id3v2.4.mp3";
 /// Path to the directory for storing temporary files constructed and operated on in integration tests.
 const SAMPLES_TMPDIR: &str = "tests/samples/tmp/";
 /// Path to the rsid3 executable.
@@ -43,6 +49,9 @@ impl TestFile {
     test_file_from_sample!(txxx, SAMPLE_TXXX);
     test_file_from_sample!(comm, SAMPLE_COMM);
     test_file_from_sample!(nirvana, SAMPLE_NIRVANA);
+    test_file_from_sample!(id3v2_2, SAMPLE_ID3V2_2);
+    test_file_from_sample!(id3v2_3, SAMPLE_ID3V2_3);
+    test_file_from_sample!(id3v2_4, SAMPLE_ID3V2_4);
 
     /// Returns the path to the test file.
     pub fn path(&self) -> &Path {
