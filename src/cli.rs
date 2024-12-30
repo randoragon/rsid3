@@ -106,10 +106,10 @@ impl Cli {
         println!();
         println!("If no print/set/delete/convert/purge options are passed, all frames are printed.");
         println!("Any number of print/set/delete/convert/purge options can be passed in any order.");
-        println!("Print options are evaluated first, then set, convert, delete and purge options.");
-        println!("Convert options cannot be combined, as it wouldn't make sense. If no convert");
-        println!("options are passed, rsid3 keeps the existing tag versions, or defaults to ID3v2.4");
-        println!("when creating new tags from scratch.");
+        println!("The options are executed in the same order as they were passed in. This allows");
+        println!("for chaining many operations under a single command.");
+        println!("If no convert options are passed, rsid3 keeps the existing tag versions,");
+        println!("or defaults to ID3v2.4 when creating new tags from scratch.");
     }
 
     /// Prints the current version of rsid3.
