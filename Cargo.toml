@@ -1,6 +1,6 @@
 [package]
 name = "rsid3"
-version = "1.0.0-alpha"
+version = "1.0.0-alpha.1"
 authors = ["Randoragon <randoragongamedev@gmail.com"]
 edition = "2021"
 description = "A simple, command line ID3v2 tag editor designed for scripting."
