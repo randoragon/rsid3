@@ -1,5 +1,3 @@
 /target
 /.direnv/
 /.envrc
-/flake.lock
-/flake.nix
