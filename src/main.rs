@@ -49,7 +49,7 @@ fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
 /// Writes a frame into a tag. The previous value is overwritten, if any.
 fn set_tag_frame(tag: &mut Tag, frame: Frame) -> Result<()> {
     match frame.id() {
-        x if x.starts_with('T') || x.starts_with('W') || x == "COMM" || x == "USLT" => {
+        x if (x.starts_with('T') && x != "TIPL") || x.starts_with('W') || x == "COMM" || x == "USLT" => {
             let _ = tag.add_frame(frame);
             Ok(())
         },

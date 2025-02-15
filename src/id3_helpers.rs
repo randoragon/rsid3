@@ -157,7 +157,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) 
                 }
             }
         },
-        x if x.starts_with('T') => {
+        x if x.starts_with('T') && x != "TIPL" => {
             if let Some(frame) = tag.get(x) {
                 print!("{}", get_content_text(frame)?);
                 return Ok(());
@@ -200,7 +200,7 @@ pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
             let lyrics = get_content_uslt(frame)?;
             println!("{}[{}]({}): {}", frame.id(), lyrics.description, lyrics.lang, lyrics.text);
         },
-        str if str.starts_with('T') => {
+        str if str.starts_with('T') && str != "TIPL" => {
             println!("{}: {}", frame.id(), get_content_text(frame)?);
         },
         str if str.starts_with('W') => {
