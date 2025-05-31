@@ -14,10 +14,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 use std::ffi::OsStr;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs::{create_dir_all, copy};
 use tempfile::NamedTempFile;
 use std::process::{Command, Output};
+use std::sync::OnceLock;
+use walkdir::WalkDir;
 
 /// Path to a sample MP3 file with no tags.
 const SAMPLE_EMPTY: &str = "tests/samples/sample_0.mp3";
@@ -29,8 +31,6 @@ const SAMPLE_TXXX: &str = "tests/samples/sample_TXXX.mp3";
 const SAMPLE_COMM: &str = "tests/samples/sample_COMM.mp3";
 /// Path to the directory for storing temporary files constructed and operated on in integration tests.
 const SAMPLES_TMPDIR: &str = "tests/samples/tmp/";
-/// Path to the rsid3 executable.
-const PROGRAM_PATH: &str = "target/debug/rsid3";
 
 pub struct TestFile {
     file: NamedTempFile,
@@ -62,8 +62,27 @@ impl TestFile {
     }
 }
 
+#[cfg(test)]
+fn rsid3_binary_path() -> &'static PathBuf {
+    static RSID3_BIN_PATH: OnceLock<PathBuf> = OnceLock::new();
+    RSID3_BIN_PATH.get_or_init(|| {
+        // Find the binary inside ./target/
+        let dirname = if cfg!(debug_assertions) { "debug" } else { "release" };
+        for entry in WalkDir::new("target") {
+            if let Ok(e) = entry {
+                if e.path().is_file()
+                    && e.path().parent().unwrap().file_name().unwrap().to_str().unwrap() == dirname
+                    && e.path().file_name().unwrap() == "rsid3" {
+                    return e.path().to_owned()
+                }
+            }
+        }
+        panic!("target binary not found");
+    })
+}
+
 pub fn rsid3_run(args: &[impl AsRef<OsStr>]) -> Output {
-    let mut cmd = Command::new(PROGRAM_PATH);
+    let mut cmd = Command::new(rsid3_binary_path());
     cmd.args(args);
     println!("Command: {:?}", cmd);
     let output = cmd.output().unwrap();
