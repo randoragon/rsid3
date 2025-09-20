@@ -506,7 +506,8 @@ impl Cli {
 
     /// Checks if a command-line argument is a setter argument.
     fn is_setter_arg(arg: &str) -> bool {
-        arg.starts_with("--") && arg.ends_with('=') && matches!(&arg[2..(arg.len() - 1)],
+        arg.len() == 7 && arg.starts_with("--") && arg.ends_with('=')
+        && (matches!(&arg[2..(arg.len() - 1)],
             "COMM" | "TALB" | "TBPM" | "TCAT" | "TCMP" | "TCOM" | "TCON" | "TCOP" |
             "TDAT" | "TDEN" | "TDES" | "TDLY" | "TDOR" | "TDRC" | "TDRL" | "TDTG" |
             "TENC" | "TEXT" | "TFLT" | "TGID" | "TIME" | "TIPL" | "TIT1" | "TIT2" |
