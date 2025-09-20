@@ -274,7 +274,7 @@ impl Cli {
                 "-0D" | "--file-sep-null" => { file_sep_null = true; },
                 "--" => { i += 1; break; },
 
-                "--COMM" => {
+                "--COMM" | "--COM" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
@@ -286,7 +286,7 @@ impl Cli {
                     actions.push(Action::Print(Frame::with_content("COMM", Content::Comment(comment))));
                     i += 2;
                 }
-                "--USLT" => {
+                "--USLT" | "--ULT" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
@@ -299,7 +299,7 @@ impl Cli {
                     i += 2;
                 },
 
-                "--TXXX" => {
+                "--TXXX" | "--TXX" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
@@ -310,7 +310,7 @@ impl Cli {
                     actions.push(Action::Print(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
                     i += 1;
                 },
-                "--WXXX" => {
+                "--WXXX" | "--WXX" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
@@ -327,7 +327,7 @@ impl Cli {
                     actions.push(Action::Print(Frame::text(&str[2..], "")));
                 },
 
-                "--COMM=" => {
+                "--COMM=" | "--COM=" => {
                     if i + 3 >= args.len() {
                         return Err(anyhow!("3 arguments expected after {}", args[i]));
                     }
@@ -339,7 +339,7 @@ impl Cli {
                     actions.push(Action::Set(Frame::with_content("COMM", Content::Comment(comment))));
                     i += 3;
                 }
-                "--USLT=" => {
+                "--USLT=" | "--ULT=" => {
                     if i + 3 >= args.len() {
                         return Err(anyhow!("3 arguments expected after {}", args[i]));
                     }
@@ -352,7 +352,7 @@ impl Cli {
                     i += 3;
                 }
 
-                "--TXXX=" => {
+                "--TXXX=" | "--TXX=" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
@@ -363,7 +363,7 @@ impl Cli {
                     actions.push(Action::Set(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
                     i += 2;
                 },
-                "--WXXX=" => {
+                "--WXXX=" | "--WXX=" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
@@ -385,7 +385,7 @@ impl Cli {
                     i += 1;
                 },
 
-                "--COMM-" => {
+                "--COMM-" | "--COM-" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
@@ -397,7 +397,7 @@ impl Cli {
                     actions.push(Action::Delete(Frame::with_content("COMM", Content::Comment(comment))));
                     i += 2;
                 }
-                "--USLT-" => {
+                "--USLT-" | "--ULT-" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
@@ -410,7 +410,7 @@ impl Cli {
                     i += 2;
                 },
 
-                "--TXXX-" => {
+                "--TXXX-" | "--TXX-" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {}", &args[i]));
                     }
@@ -421,7 +421,7 @@ impl Cli {
                     actions.push(Action::Delete(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
                     i += 1;
                 },
-                "--WXXX-" => {
+                "--WXXX-" | "--WXX-" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {}", &args[i]));
                     }
@@ -500,14 +500,15 @@ impl Cli {
 
     /// Checks if a command-line argument is a getter argument.
     fn is_getter_arg(arg: &str) -> bool {
-        arg.len() == 6 && arg.starts_with("--") && (arg[2..]).chars()
+        (arg.len() == 6 || arg.len() == 5) && arg.starts_with("--") && (arg[2..]).chars()
             .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 
     /// Checks if a command-line argument is a setter argument.
     fn is_setter_arg(arg: &str) -> bool {
-        arg.len() == 7 && arg.starts_with("--") && arg.ends_with('=')
+        (arg.len() == 7 || arg.len() == 6) && arg.starts_with("--") && arg.ends_with('=')
         && (matches!(&arg[2..(arg.len() - 1)],
+            // ID3v2.3 / ID3v2.4 frames
             "COMM" | "TALB" | "TBPM" | "TCAT" | "TCMP" | "TCOM" | "TCON" | "TCOP" |
             "TDAT" | "TDEN" | "TDES" | "TDLY" | "TDOR" | "TDRC" | "TDRL" | "TDTG" |
             "TENC" | "TEXT" | "TFLT" | "TGID" | "TIME" | "TIPL" | "TIT1" | "TIT2" |
@@ -516,12 +517,24 @@ impl Cli {
             "TPE3" | "TPE4" | "TPOS" | "TPRO" | "TPUB" | "TRCK" | "TRDA" | "TRSN" |
             "TRSO" | "TSIZ" | "TSO2" | "TSOA" | "TSOC" | "TSOP" | "TSOT" | "TSRC" |
             "TSSE" | "TSST" | "TXXX" | "TYER" | "USLT" | "WCOM" | "WCOP" | "WFED" |
-            "WOAF" | "WOAR" | "WOAS" | "WORS" | "WPAY" | "WPUB" | "WXXX")
+            "WOAF" | "WOAR" | "WOAS" | "WORS" | "WPAY" | "WPUB" | "WXXX" |
+
+            // ID3v2.2 frames
+            "TT1" | "TT2" | "TT3" | "TP1" | "TP2" | "TP3" | "TP4" | "TCM" |
+            "TXT" | "TLA" | "TCO" | "TAL" | "TPA" | "TRK" | "TRC" | "TYE" |
+            "TDA" | "TIM" | "TRD" | "TMT" | "TFT" | "TBP" | "TCR" | "TPB" |
+            "TEN" | "TSS" | "TOF" | "TLE" | "TSI" | "TDY" | "TKE" | "TOT" |
+            "TOA" | "TOL" | "TOR" | "TXX" | "ULT" | "COM")
+
+        // ID3v2.2 URL frames have names "W00" - "WZZ", excluding "WXX".
+        // "WXX" is a user-defined URL link frame, which rsid3 also supports.
+        || arg[2..(arg.len() - 1)].chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+    )
     }
 
     /// Checks if a command-line argument is a delete argument.
     fn is_delete_arg(arg: &str) -> bool {
-        arg.len() == 7 && arg.starts_with("--") && arg.ends_with('-')
+        (arg.len() == 7 || arg.len() == 6) && arg.starts_with("--") && arg.ends_with('-')
         && (arg[2..(arg.len() - 1)]).chars() .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 }
