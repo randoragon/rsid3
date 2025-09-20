@@ -276,7 +276,7 @@ impl Cli {
 
                 "--COMM" => {
                     if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after --COMM"));
+                        return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
                     let comment = Comment {
                         description: args[i + 1].clone(),
@@ -288,7 +288,7 @@ impl Cli {
                 }
                 "--USLT" => {
                     if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after --USLT"));
+                        return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
                     let lyrics = Lyrics {
                         description: args[i + 1].clone(),
@@ -301,7 +301,7 @@ impl Cli {
 
                 "--TXXX" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after --TXXX"));
+                        return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
                     let extended_text = ExtendedText {
                         value: "".to_string(),
@@ -312,7 +312,7 @@ impl Cli {
                 },
                 "--WXXX" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after --WXXX"));
+                        return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
                     let extended_link = ExtendedLink {
                         link: "".to_string(),
@@ -329,7 +329,7 @@ impl Cli {
 
                 "--COMM=" => {
                     if i + 3 >= args.len() {
-                        return Err(anyhow!("3 arguments expected after --COMM="));
+                        return Err(anyhow!("3 arguments expected after {}", args[i]));
                     }
                     let comment = Comment {
                         description: args[i + 1].clone(),
@@ -341,7 +341,7 @@ impl Cli {
                 }
                 "--USLT=" => {
                     if i + 3 >= args.len() {
-                        return Err(anyhow!("3 arguments expected after --USLT="));
+                        return Err(anyhow!("3 arguments expected after {}", args[i]));
                     }
                     let lyrics = Lyrics {
                         description: args[i + 1].clone(),
@@ -354,7 +354,7 @@ impl Cli {
 
                 "--TXXX=" => {
                     if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after --TXXX="));
+                        return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
                     let extended_text = ExtendedText {
                         description: args[i + 1].clone(),
@@ -365,7 +365,7 @@ impl Cli {
                 },
                 "--WXXX=" => {
                     if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after --WXXX="));
+                        return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
                     let extended_link = ExtendedLink {
                         description: args[i + 1].clone(),
@@ -387,7 +387,7 @@ impl Cli {
 
                 "--COMM-" => {
                     if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after --COMM"));
+                        return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
                     let comment = Comment {
                         description: args[i + 1].clone(),
@@ -399,7 +399,7 @@ impl Cli {
                 }
                 "--USLT-" => {
                     if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after --USLT"));
+                        return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
                     let lyrics = Lyrics {
                         description: args[i + 1].clone(),
@@ -412,7 +412,7 @@ impl Cli {
 
                 "--TXXX-" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after --TXXX"));
+                        return Err(anyhow!("1 argument expected after {}", &args[i]));
                     }
                     let extended_text = ExtendedText {
                         value: "".to_string(),
@@ -423,7 +423,7 @@ impl Cli {
                 },
                 "--WXXX-" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after --WXXX"));
+                        return Err(anyhow!("1 argument expected after {}", &args[i]));
                     }
                     let extended_link = ExtendedLink {
                         link: "".to_string(),
