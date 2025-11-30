@@ -500,7 +500,7 @@ impl Cli {
 
     /// Checks if a command-line argument is a getter argument.
     fn is_getter_arg(arg: &str) -> bool {
-        arg.starts_with("--") && (arg[2..]).chars()
+        arg.len() == 6 && arg.starts_with("--") && (arg[2..]).chars()
             .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 
@@ -520,7 +520,7 @@ impl Cli {
 
     /// Checks if a command-line argument is a delete argument.
     fn is_delete_arg(arg: &str) -> bool {
-        arg.len() > 3 && arg.starts_with("--") && arg.ends_with('-')
+        arg.len() == 7 && arg.starts_with("--") && arg.ends_with('-')
         && (arg[2..(arg.len() - 1)]).chars() .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 }
