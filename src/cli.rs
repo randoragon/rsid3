@@ -122,114 +122,172 @@ impl Cli {
 
     /// Prints the available frames.
     pub fn print_all_frames() {
-        println!("Read-write frames:");
-        println!("COMM	User comment (DESC, LANG, TEXT)");
-        println!("TALB	Album");
-        println!("TBPM	Beats per minute");
-        println!("TCAT	iTunes podcast category");
-        println!("TCMP	iTunes compilation flag");
-        println!("TCOM	Composer");
-        println!("TCON	Content type (genre)");
-        println!("TCOP	Copyright");
-        println!("TDAT	Date of recording (DDMM)");
-        println!("TDEN	Encoding time");
-        println!("TDES	iTunes podcast description");
-        println!("TDLY	Audio delay (ms)");
-        println!("TDOR	Original release time");
-        println!("TDRC	Recording time");
-        println!("TDRL	Release time");
-        println!("TDTG	Tagging time");
-        println!("TENC	Encoder");
-        println!("TEXT	Lyricist");
-        println!("TFLT	File type");
-        println!("TGID	iTunes podcast identifier");
-        println!("TIME	Time of recording (HHMM)");
-        println!("TIPL	Involved people list");
-        println!("TIT1	Content group description");
-        println!("TIT2	Title");
-        println!("TIT3	Subtitle/description refinement");
-        println!("TKEY	Starting key");
-        println!("TKWD	iTunes podcast keywords");
-        println!("TLAN	Audio languages");
-        println!("TLEN	Audio length (ms)");
-        println!("TMCL	Musicians credits list");
-        println!("TMED	Source media type");
-        println!("TMOO	Mood");
-        println!("TOAL	Original album");
-        println!("TOFN	Original filename");
-        println!("TOLY	Original lyricist");
-        println!("TOPE	Original artist/performer");
-        println!("TORY	Original release year");
-        println!("TOWN	Owner/Licensee");
-        println!("TPE1	Lead artist/performer/soloist/group");
-        println!("TPE2	Band/Orchestra/Accompaniment");
-        println!("TPE3	Conductor");
-        println!("TPE4	Interpreter/Remixer/Modifier");
-        println!("TPOS	Part of set");
-        println!("TPRO	Produced");
-        println!("TPUB	Publisher");
-        println!("TRCK	Track number");
-        println!("TRDA	Recording dates");
-        println!("TRSN	Internet radio station name");
-        println!("TRSO	Internet radio station owner");
-        println!("TSIZ	Size of audio data (bytes)");
-        println!("TSO2	iTunes album artist sort");
-        println!("TSOA	Album sort order key");
-        println!("TSOC	iTunes composer sort");
-        println!("TSOP	Performer sort order key");
-        println!("TSOT	Title sort order key");
-        println!("TSRC	International Standard Recording Code (ISRC)");
-        println!("TSSE	Encoder settings");
-        println!("TSST	Set subtitle");
-        println!("TXXX	User-defined text data (DESC, TEXT)");
-        println!("TYER	Year of recording");
-        println!("USLT	Unsynchronised lyrics/text transcription (DESC, LANG, TEXT)");
-        println!("WCOM	Commercial information");
-        println!("WCOP	Copyright information");
-        println!("WFED	iTunes podcast feed");
-        println!("WOAF	Official file information");
-        println!("WOAR	Official artist/performer information");
-        println!("WOAS	Official source information");
-        println!("WORS	Official internet radio information");
-        println!("WPAY	Payment information");
-        println!("WPUB	Official publisher information");
-        println!("WXXX	User-defined URL data (DESC, URL)");
-        println!();
-        println!("Read-only frames (rudimentary support):");
-        println!("AENC	Audio encryption");
-        println!("APIC	Attached (or linked) picture");
-        println!("ASPI	Audio seek point index");
-        println!("CHAP	Chapter");
-        println!("COMR	Commercial frame");
-        println!("CTOC	Table of contents");
-        println!("ENCR	Encryption method registration");
-        println!("EQU2	Equalization 2");
-        println!("ETCO	Event timing codes");
-        println!("GEOB	General encapsulated object");
-        println!("GRID	Group identification registration");
-        println!("GRP1	iTunes grouping");
-        println!("IPLS	Involved people list");
-        println!("LINK	Linked information");
-        println!("MCDI	Binary dump of CD's TOC");
-        println!("MLLT	MPEG location lookup table");
-        println!("MVIN	iTunes movement number/count");
-        println!("MVNM	iTunes movement name");
-        println!("OWNE	Ownership frame");
-        println!("PCNT	Play counter");
-        println!("PCST	iTunes podcast flag");
-        println!("POPM	Popularimeter");
-        println!("POSS	Position synchronisation frame");
-        println!("PRIV	Private frame");
-        println!("RBUF	Recommended buffer size");
-        println!("RVA2	Relative volume adjustment 2");
-        println!("RVAD	Relative volume adjustment");
-        println!("RVRB	Reverb");
-        println!("SEEK	Seek frame");
-        println!("SIGN	Signature frame");
-        println!("SYLT	Synchronised lyrics/text");
-        println!("SYTC	Synchronised tempo codes");
-        println!("UFID	Unique file identifier");
-        println!("USER	Terms of use");
+        println!("\
+.-------------------------------------------------------------------------------------------------------------.
+|       ID3 standard        | Name |                          Description                         | Writeable |
+|-------------------------------------------------------------------------------------------------------------|
+|          ID3v2.3, ID3v2.4 | COMM | User comment (DESC, LANG, TEXT)                              |    yes    |
+|          ID3v2.3, ID3v2.4 | TALB | Album                                                        |    yes    |
+|          ID3v2.3, ID3v2.4 | TBPM | Beats per minute                                             |    yes    |
+|          ID3v2.3, ID3v2.4 | TCOM | Composer                                                     |    yes    |
+|          ID3v2.3, ID3v2.4 | TCON | Content type (genre)                                         |    yes    |
+|          ID3v2.3, ID3v2.4 | TCOP | Copyright                                                    |    yes    |
+|          ID3v2.3          | TDAT | Date of recording (DDMM)                                     |    yes    |
+|                   ID3v2.4 | TDEN | Encoding time (YYYY-MM-DDTHH:MM:SS)                          |    yes    |
+|          ID3v2.3, ID3v2.4 | TDLY | Playlist delay (ms)                                          |    yes    |
+|                   ID3v2.4 | TDOR | Original release time (YYYY-MM-DDTHH:MM:SS)                  |    yes    |
+|                   ID3v2.4 | TDRC | Recording time (YYYY-MM-DDTHH:MM:SS)                         |    yes    |
+|                   ID3v2.4 | TDRL | Release time (YYYY-MM-DDTHH:MM:SS)                           |    yes    |
+|                   ID3v2.4 | TDTG | Tagging time (YYYY-MM-DDTHH:MM:SS)                           |    yes    |
+|          ID3v2.3, ID3v2.4 | TENC | Encoder                                                      |    yes    |
+|          ID3v2.3, ID3v2.4 | TEXT | Lyricist                                                     |    yes    |
+|          ID3v2.3, ID3v2.4 | TFLT | File type                                                    |    yes    |
+|          ID3v2.3          | TIME | Time of recording (HHMM)                                     |    yes    |
+|                   ID3v2.4 | TIPL | Involved people list                                         |    yes    |
+|          ID3v2.3, ID3v2.4 | TIT1 | Content group description                                    |    yes    |
+|          ID3v2.3, ID3v2.4 | TIT2 | Title                                                        |    yes    |
+|          ID3v2.3, ID3v2.4 | TIT3 | Subtitle/description refinement                              |    yes    |
+|          ID3v2.3, ID3v2.4 | TKEY | Starting key                                                 |    yes    |
+|          ID3v2.3, ID3v2.4 | TLAN | Audio languages                                              |    yes    |
+|          ID3v2.3, ID3v2.4 | TLEN | Audio length (ms)                                            |    yes    |
+|                   ID3v2.4 | TMCL | Musicians credits list                                       |    yes    |
+|          ID3v2.3, ID3v2.4 | TMED | Source media type                                            |    yes    |
+|                   ID3v2.4 | TMOO | Mood                                                         |    yes    |
+|          ID3v2.3, ID3v2.4 | TOAL | Original album/movie/show title                              |    yes    |
+|          ID3v2.3, ID3v2.4 | TOFN | Original filename                                            |    yes    |
+|          ID3v2.3, ID3v2.4 | TOLY | Original lyricist                                            |    yes    |
+|          ID3v2.3, ID3v2.4 | TOPE | Original artist/performer                                    |    yes    |
+|          ID3v2.3          | TORY | Original release year                                        |    yes    |
+|          ID3v2.3, ID3v2.4 | TOWN | Owner/Licensee                                               |    yes    |
+|          ID3v2.3, ID3v2.4 | TPE1 | Lead artist/performer/soloist/group                          |    yes    |
+|          ID3v2.3, ID3v2.4 | TPE2 | Band/Orchestra/Accompaniment                                 |    yes    |
+|          ID3v2.3, ID3v2.4 | TPE3 | Conductor                                                    |    yes    |
+|          ID3v2.3, ID3v2.4 | TPE4 | Interpreter/Remixer/Modifier                                 |    yes    |
+|          ID3v2.3, ID3v2.4 | TPOS | Part of set                                                  |    yes    |
+|                   ID3v2.4 | TPRO | Produced                                                     |    yes    |
+|          ID3v2.3, ID3v2.4 | TPUB | Publisher                                                    |    yes    |
+|          ID3v2.3, ID3v2.4 | TRCK | Track number                                                 |    yes    |
+|          ID3v2.3          | TRDA | Recording dates                                              |    yes    |
+|          ID3v2.3, ID3v2.4 | TRSN | Internet radio station name                                  |    yes    |
+|          ID3v2.3, ID3v2.4 | TRSO | Internet radio station owner                                 |    yes    |
+|          ID3v2.3          | TSIZ | Size of audio data (bytes)                                   |    yes    |
+|                   ID3v2.4 | TSOA | Album sort order key                                         |    yes    |
+|                   ID3v2.4 | TSOP | Performer sort order key                                     |    yes    |
+|                   ID3v2.4 | TSOT | Title sort order key                                         |    yes    |
+|          ID3v2.3, ID3v2.4 | TSRC | International Standard Recording Code (ISRC)                 |    yes    |
+|          ID3v2.3, ID3v2.4 | TSSE | Encoder settings                                             |    yes    |
+|                   ID3v2.4 | TSST | Set subtitle                                                 |    yes    |
+|          ID3v2.3, ID3v2.4 | TXXX | User-defined text data (DESC, TEXT)                          |    yes    |
+|          ID3v2.3          | TYER | Year of recording                                            |    yes    |
+|          ID3v2.3, ID3v2.4 | USLT | Unsynchronised lyrics/transcription (DESC, LANG, TEXT)       |    yes    |
+|          ID3v2.3, ID3v2.4 | WCOM | Commercial information                                       |    yes    |
+|          ID3v2.3, ID3v2.4 | WCOP | Copyright information                                        |    yes    |
+|          ID3v2.3, ID3v2.4 | WOAF | Official file information                                    |    yes    |
+|          ID3v2.3, ID3v2.4 | WOAR | Official artist/performer information                        |    yes    |
+|          ID3v2.3, ID3v2.4 | WOAS | Official source information                                  |    yes    |
+|          ID3v2.3, ID3v2.4 | WORS | Official internet radio information                          |    yes    |
+|          ID3v2.3, ID3v2.4 | WPAY | Payment information                                          |    yes    |
+|          ID3v2.3, ID3v2.4 | WPUB | Official publisher information                               |    yes    |
+|          ID3v2.3, ID3v2.4 | WXXX | User-defined URL data (DESC, URL)                            |    yes    |
+|          ID3v2.3, ID3v2.4 | AENC | Audio encryption                                             |           |
+|          ID3v2.3, ID3v2.4 | APIC | Attached (or linked) picture                                 |           |
+|                   ID3v2.4 | ASPI | Audio seek point index                                       |           |
+|          ID3v2.3, ID3v2.4 | COMR | Commercial frame                                             |           |
+|          ID3v2.3, ID3v2.4 | ENCR | Encryption method registration                               |           |
+|          ID3v2.3          | EQUA | Equalization                                                 |           |
+|                   ID3v2.4 | EQU2 | Equalization                                                 |           |
+|          ID3v2.3, ID3v2.4 | ETCO | Event timing codes                                           |           |
+|          ID3v2.3, ID3v2.4 | GEOB | General encapsulated object                                  |           |
+|          ID3v2.3, ID3v2.4 | GRID | Group identification registration                            |           |
+|          ID3v2.3          | IPLS | Involved people list                                         |           |
+|          ID3v2.3, ID3v2.4 | LINK | Linked information                                           |           |
+|          ID3v2.3, ID3v2.4 | MCDI | Binary dump of CD's TOC                                      |           |
+|          ID3v2.3, ID3v2.4 | MLLT | MPEG location lookup table                                   |           |
+|          ID3v2.3, ID3v2.4 | OWNE | Ownership frame                                              |           |
+|          ID3v2.3, ID3v2.4 | PCNT | Play counter                                                 |           |
+|          ID3v2.3, ID3v2.4 | POPM | Popularimeter                                                |           |
+|          ID3v2.3, ID3v2.4 | POSS | Position synchronisation frame                               |           |
+|          ID3v2.3, ID3v2.4 | PRIV | Private frame                                                |           |
+|          ID3v2.3, ID3v2.4 | RBUF | Recommended buffer size                                      |           |
+|          ID3v2.3          | RVAD | Relative volume adjustment                                   |           |
+|                   ID3v2.4 | RVA2 | Relative volume adjustment                                   |           |
+|          ID3v2.3, ID3v2.4 | RVRB | Reverb                                                       |           |
+|                   ID3v2.4 | SEEK | Seek frame                                                   |           |
+|                   ID3v2.4 | SIGN | Signature frame                                              |           |
+|          ID3v2.3, ID3v2.4 | SYLT | Synchronised lyrics/text                                     |           |
+|          ID3v2.3, ID3v2.4 | SYTC | Synchronised tempo codes                                     |           |
+|          ID3v2.3, ID3v2.4 | UFID | Unique file identifier                                       |           |
+|          ID3v2.3, ID3v2.4 | USER | Terms of use                                                 |           |
+| ID3v2.2                   | COM  | Comments (DESC, LANG, TEXT)                                  |    yes    |
+| ID3v2.2                   | TAL  | Album/Movie/Show title                                       |    yes    |
+| ID3v2.2                   | TBP  | BPM (Beats Per Minute)                                       |    yes    |
+| ID3v2.2                   | TCM  | Composer                                                     |    yes    |
+| ID3v2.2                   | TCO  | Content type                                                 |    yes    |
+| ID3v2.2                   | TCR  | Copyright message                                            |    yes    |
+| ID3v2.2                   | TDA  | Date                                                         |    yes    |
+| ID3v2.2                   | TDY  | Playlist delay                                               |    yes    |
+| ID3v2.2                   | TEN  | Encoded by                                                   |    yes    |
+| ID3v2.2                   | TFT  | File type                                                    |    yes    |
+| ID3v2.2                   | TIM  | Time                                                         |    yes    |
+| ID3v2.2                   | TKE  | Initial key                                                  |    yes    |
+| ID3v2.2                   | TLA  | Language(s)                                                  |    yes    |
+| ID3v2.2                   | TLE  | Length                                                       |    yes    |
+| ID3v2.2                   | TMT  | Media type                                                   |    yes    |
+| ID3v2.2                   | TOA  | Original artist(s)/performer(s)                              |    yes    |
+| ID3v2.2                   | TOF  | Original filename                                            |    yes    |
+| ID3v2.2                   | TOL  | Original Lyricist(s)/text writer(s)                          |    yes    |
+| ID3v2.2                   | TOR  | Original release year                                        |    yes    |
+| ID3v2.2                   | TOT  | Original album/Movie/Show title                              |    yes    |
+| ID3v2.2                   | TP1  | Lead artist(s)/Lead performer(s)/Soloist(s)/Performing group |    yes    |
+| ID3v2.2                   | TP2  | Band/Orchestra/Accompaniment                                 |    yes    |
+| ID3v2.2                   | TP3  | Conductor/Performer refinement                               |    yes    |
+| ID3v2.2                   | TP4  | Interpreted, remixed, or otherwise modified by               |    yes    |
+| ID3v2.2                   | TPA  | Part of a set                                                |    yes    |
+| ID3v2.2                   | TPB  | Publisher                                                    |    yes    |
+| ID3v2.2                   | TRC  | ISRC (International Standard Recording Code)                 |    yes    |
+| ID3v2.2                   | TRD  | Recording dates                                              |    yes    |
+| ID3v2.2                   | TRK  | Drack number/Position in set                                 |    yes    |
+| ID3v2.2                   | TSI  | Size                                                         |    yes    |
+| ID3v2.2                   | TSS  | Software/hardware and settings used for encoding             |    yes    |
+| ID3v2.2                   | TT1  | Content group description                                    |    yes    |
+| ID3v2.2                   | TT2  | Title/Songname/Content description                           |    yes    |
+| ID3v2.2                   | TT3  | Subtitle/Description refinement                              |    yes    |
+| ID3v2.2                   | TXT  | Lyricist/text writer                                         |    yes    |
+| ID3v2.2                   | TXX  | User defined text information frame (DESC, TEXT)             |    yes    |
+| ID3v2.2                   | TYE  | Year                                                         |    yes    |
+| ID3v2.2                   | ULT  | Unsychronized lyric/text transcription (DESC, LANG, TEXT)    |    yes    |
+| ID3v2.2                   | WAF  | Official audio file webpage                                  |    yes    |
+| ID3v2.2                   | WAR  | Official artist/performer webpage                            |    yes    |
+| ID3v2.2                   | WAS  | Official audio source webpage                                |    yes    |
+| ID3v2.2                   | WCM  | Commercial information                                       |    yes    |
+| ID3v2.2                   | WCP  | Copyright/Legal information                                  |    yes    |
+| ID3v2.2                   | WPB  | Publishers official webpage                                  |    yes    |
+| ID3v2.2                   | WXX  | User defined URL link frame (DESC, URL)                      |    yes    |
+| ID3v2.2                   | BUF  | Recommended buffer size                                      |           |
+| ID3v2.2                   | CNT  | Play counter                                                 |           |
+| ID3v2.2                   | CRA  | Audio encryption                                             |           |
+| ID3v2.2                   | CRM  | Encrypted meta frame                                         |           |
+| ID3v2.2                   | EQU  | Equalization                                                 |           |
+| ID3v2.2                   | ETC  | Event timing codes                                           |           |
+| ID3v2.2                   | GEO  | General encapsulated object                                  |           |
+| ID3v2.2                   | IPL  | Involved people list                                         |           |
+| ID3v2.2                   | LNK  | Linked information                                           |           |
+| ID3v2.2                   | MCI  | Music CD Identifier                                          |           |
+| ID3v2.2                   | MLL  | MPEG location lookup table                                   |           |
+| ID3v2.2                   | PIC  | Attached picture                                             |           |
+| ID3v2.2                   | POP  | Popularimeter                                                |           |
+| ID3v2.2                   | REV  | Reverb                                                       |           |
+| ID3v2.2                   | RVA  | Relative volume adjustment                                   |           |
+| ID3v2.2                   | SLT  | Synchronized lyric/text                                      |           |
+| ID3v2.2                   | STC  | Synced tempo codes                                           |           |
+| ID3v2.2                   | UFI  | Unique file identifier                                       |           |
+`-------------------------------------------------------------------------------------------------------------`
+
+                                ID3v1                                 ID3v2.3
+                        https://id3.org/ID3v1                https://id3.org/id3v2.3.0
+
+                               ID3v2.2                                ID3v2.4
+                       https://id3.org/id3v2-00          https://id3.org/id3v2.4.0-frames\n");
     }
 
     /// Construct a Cli object representing passed command-line arguments.
