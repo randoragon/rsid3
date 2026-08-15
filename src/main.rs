@@ -153,13 +153,13 @@ fn main() -> ExitCode {
                                 is_first_file_print = false;
                             }
                         }
-                        if let Err(e) = print_tag_frame_query(&tag, frame, fpath) {
+                        if let Err(e) = print_tag_frame_query(&tag, &frame.to_id3_frame(), fpath) {
                             eprintln!("rsid3: {e}");
                             return ExitCode::FAILURE;
                         }
                     },
                     Action::Set(frame) => {
-                        match set_tag_frame(&mut tag, frame.clone()) {
+                        match set_tag_frame(&mut tag, frame.to_id3_frame()) {
                             Ok(_) => {
                                 tag_was_modified = true;
                             },
@@ -170,7 +170,7 @@ fn main() -> ExitCode {
                         }
                     },
                     Action::Delete(frame) => {
-                        match delete_tag_frame(&mut tag, frame, fpath) {
+                        match delete_tag_frame(&mut tag, &frame.to_id3_frame(), fpath) {
                             Ok(modified) => {
                                 tag_was_modified |= modified;
                             },

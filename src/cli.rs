@@ -15,7 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 use std::env::args;
 use anyhow::{anyhow, Result};
-use id3::{Frame, Content};
+use id3::Content;
 use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
 
 /// Represents all options passed to the program on the command line.
@@ -61,6 +61,16 @@ pub enum PurgeOpt {
     Id3v23,
     Id3v24,
     All,
+}
+
+/// Represents a single "frame argument" with its associated subarguments,
+/// e.g. --TIT2, --TT2= val, etc.
+#[derive(Debug, Clone)]
+pub struct Frame {
+    pub id: String,
+    pub desc: Option<String>,
+    pub lang: Option<String>,
+    pub content: Option<String>,
 }
 
 impl Cli {
@@ -346,104 +356,74 @@ impl Cli {
                 "-0D" | "--file-sep-null" => { file_sep_null = true; },
                 "--" => { i += 1; break; },
 
-                "--COMM" | "--COM" => {
-                    if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after {}", args[i]));
-                    }
-                    let comment = Comment {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
-                    };
-                    actions.push(Action::Print(Frame::with_content("COMM", Content::Comment(comment))));
-                    i += 2;
-                }
+                "--COMM" | "--COM" |
                 "--USLT" | "--ULT" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
-                    let lyrics = Lyrics {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
+                    let frame = Frame {
+                        id: arg[2..].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: Some(args[i + 2].clone()),
+                        content: None,
                     };
-                    actions.push(Action::Print(Frame::with_content("USLT", Content::Lyrics(lyrics))));
+                    actions.push(Action::Print(frame));
                     i += 2;
                 },
 
-                "--TXXX" | "--TXX" => {
-                    if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after {}", args[i]));
-                    }
-                    let extended_text = ExtendedText {
-                        value: "".to_string(),
-                        description: args[i + 1].clone(),
-                    };
-                    actions.push(Action::Print(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
-                    i += 1;
-                },
+                "--TXXX" | "--TXX" |
                 "--WXXX" | "--WXX" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
-                    let extended_link = ExtendedLink {
-                        link: "".to_string(),
-                        description: args[i + 1].clone(),
+                    let frame = Frame {
+                        id: arg[2..].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: None,
+                        content: None,
                     };
-                    actions.push(Action::Print(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
+                    actions.push(Action::Print(frame));
                     i += 1;
                 },
 
                 // All parameterless getters
                 str if Cli::is_getter_arg(str) => {
-                    actions.push(Action::Print(Frame::text(&str[2..], "")));
+                    let frame = Frame {
+                        id: str[2..].to_string(),
+                        desc: None,
+                        lang: None,
+                        content: None,
+                    };
+                    actions.push(Action::Print(frame));
                 },
 
-                "--COMM=" | "--COM=" => {
-                    if i + 3 >= args.len() {
-                        return Err(anyhow!("3 arguments expected after {}", args[i]));
-                    }
-                    let comment = Comment {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: args[i + 3].clone(),
-                    };
-                    actions.push(Action::Set(Frame::with_content("COMM", Content::Comment(comment))));
-                    i += 3;
-                }
+                "--COMM=" | "--COM=" |
                 "--USLT=" | "--ULT=" => {
                     if i + 3 >= args.len() {
                         return Err(anyhow!("3 arguments expected after {}", args[i]));
                     }
-                    let lyrics = Lyrics {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: args[i + 3].clone(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: Some(args[i + 2].clone()),
+                        content: Some(args[i + 3].clone()),
                     };
-                    actions.push(Action::Set(Frame::with_content("USLT", Content::Lyrics(lyrics))));
+                    actions.push(Action::Set(frame));
                     i += 3;
                 }
 
-                "--TXXX=" | "--TXX=" => {
-                    if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after {}", args[i]));
-                    }
-                    let extended_text = ExtendedText {
-                        description: args[i + 1].clone(),
-                        value: args[i + 2].clone(),
-                    };
-                    actions.push(Action::Set(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
-                    i += 2;
-                },
+                "--TXXX=" | "--TXX=" |
                 "--WXXX=" | "--WXX=" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
-                    let extended_link = ExtendedLink {
-                        description: args[i + 1].clone(),
-                        link: args[i + 2].clone(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: None,
+                        content: Some(args[i + 2].clone()),
                     };
-                    actions.push(Action::Set(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
+                    actions.push(Action::Set(frame));
                     i += 2;
                 },
 
@@ -452,62 +432,55 @@ impl Cli {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {str}"));
                     }
-                    let text = args[i + 1].clone();
-                    actions.push(Action::Set(Frame::text(&str[2..(str.len() - 1)], text)));
+                    let frame = Frame {
+                        id: str[2..(str.len() - 1)].to_string(),
+                        desc: None,
+                        lang: None,
+                        content: Some(args[i + 1].clone()),
+                    };
+                    actions.push(Action::Set(frame));
                     i += 1;
                 },
 
-                "--COMM-" | "--COM-" => {
-                    if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after {}", args[i]));
-                    }
-                    let comment = Comment {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
-                    };
-                    actions.push(Action::Delete(Frame::with_content("COMM", Content::Comment(comment))));
-                    i += 2;
-                }
+                "--COMM-" | "--COM-" |
                 "--USLT-" | "--ULT-" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
-                    let lyrics = Lyrics {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: Some(args[i + 2].clone()),
+                        content: None,
                     };
-                    actions.push(Action::Delete(Frame::with_content("USLT", Content::Lyrics(lyrics))));
+                    actions.push(Action::Delete(frame));
                     i += 2;
-                },
+                }
 
-                "--TXXX-" | "--TXX-" => {
-                    if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after {}", &args[i]));
-                    }
-                    let extended_text = ExtendedText {
-                        value: "".to_string(),
-                        description: args[i + 1].clone(),
-                    };
-                    actions.push(Action::Delete(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
-                    i += 1;
-                },
+                "--TXXX-" | "--TXX-" |
                 "--WXXX-" | "--WXX-" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after {}", &args[i]));
+                        return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
-                    let extended_link = ExtendedLink {
-                        link: "".to_string(),
-                        description: args[i + 1].clone(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: None,
+                        content: None,
                     };
-                    actions.push(Action::Delete(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
+                    actions.push(Action::Delete(frame));
                     i += 1;
                 },
 
                 // All parameterless delete args
                 str if Cli::is_delete_arg(str) => {
-                    actions.push(Action::Delete(Frame::text(&str[2..(str.len() - 1)], "")));
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: None,
+                        lang: None,
+                        content: None,
+                    };
+                    actions.push(Action::Delete(frame));
                 },
 
                 "--id3v2.2" => {
@@ -609,5 +582,50 @@ impl Cli {
     fn is_delete_arg(arg: &str) -> bool {
         (arg.len() == 7 || arg.len() == 6) && arg.starts_with("--") && arg.ends_with('-')
         && (arg[2..(arg.len() - 1)]).chars() .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+    }
+}
+
+impl Frame {
+    /// Converts a Cli::Frame to an id3::Frame. This is a one-way conversion, because id3::Frame
+    /// does not retain information about whether a frame was ID3v2.2 or ID3v2.3+. In particular,
+    /// the 3-letter frame ID of ID3v2.2 gets converted to a 4-letter ID of ID3v2.3.
+    pub fn to_id3_frame(&self) -> id3::Frame {
+        match self.id.as_str() {
+            "COMM" | "COM" => {
+                let comment = Comment {
+                    description: self.desc.clone().unwrap(),
+                    lang: self.lang.clone().unwrap(),
+                    text: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::Comment(comment))
+            },
+
+            "USLT" | "ULT" => {
+                let lyrics = Lyrics {
+                    description: self.desc.clone().unwrap(),
+                    lang: self.lang.clone().unwrap(),
+                    text: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::Lyrics(lyrics))
+            },
+
+            "TXXX" | "TXX" => {
+                let extended_text = ExtendedText {
+                    description: self.desc.clone().unwrap(),
+                    value: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::ExtendedText(extended_text))
+            },
+
+            "WXXX" | "WXX" => {
+                let extended_link = ExtendedLink {
+                    description: self.desc.clone().unwrap(),
+                    link: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::ExtendedLink(extended_link))
+            },
+
+            _ => id3::Frame::text(self.id.clone(), self.content.clone().unwrap_or_default()),
+        }
     }
 }
