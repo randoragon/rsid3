@@ -76,8 +76,8 @@ impl Cli {
         println!("  -V, --version            Print version information.");
         println!("  -l, --list-frames        List supported ID3v2.3 and ID3v2.4 frames.");
         println!("  -L, --list-all-frames    List all supported frames (including ID3v.2.2).");
-        println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \\n).");
-        println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \\n).");
+        println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \"\\n\").");
+        println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \"\\n\").");
         println!("  -0d, --frame-sep-null    Separate printed frames with the null byte.");
         println!("  -0D, --file-sep-null     Separate printed files with the null byte.");
         println!();
