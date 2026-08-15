@@ -24,6 +24,7 @@ pub struct Cli {
     pub help: bool,
     pub version: bool,
     pub list_frames: bool,
+    pub list_all_frames: bool,
     pub frame_sep: Option<String>,
     pub file_sep: Option<String>,
     pub frame_sep_null: bool,
@@ -73,7 +74,8 @@ impl Cli {
         println!("Options:");
         println!("  -h, --help               Show this help and exit.");
         println!("  -V, --version            Print version information.");
-        println!("  -L, --list-frames        List all supported frames.");
+        println!("  -l, --list-frames        List supported ID3v2.3 and ID3v2.4 frames.");
+        println!("  -L, --list-all-frames    List all supported frames (including ID3v.2.2).");
         println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \\n).");
         println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \\n).");
         println!("  -0d, --frame-sep-null    Separate printed frames with the null byte.");
@@ -121,7 +123,7 @@ impl Cli {
     }
 
     /// Prints the available frames.
-    pub fn print_all_frames() {
+    pub fn print_frames(all: bool) {
         println!("ID3v2.3 and ID3v2.4 common frames:");
         println!("rw	COMM	User comment (DESC, LANG, TEXT)");
         println!("r-	CHAP	Chapter");
@@ -231,71 +233,73 @@ impl Cli {
         println!("rw	TRDA	Recording dates");
         println!("rw	TSIZ	Size of audio data (bytes)");
         println!("rw	TYER	Year of recording (YYYY)");
-        println!();
-        println!("ID3v2.2 exclusive frames:");
-        println!("r-	BUF	Recommended buffer size");
-        println!("r-	CNT	Play counter");
-        println!("rw	COM	Comments (DESC, LANG, TEXT)");
-        println!("r-	CRA	Audio encryption");
-        println!("r-	CRM	Encrypted meta frame");
-        println!("r-	ETC	Event timing codes");
-        println!("r-	EQU	Equalization");
-        println!("r-	GEO	General encapsulated object");
-        println!("r-	IPL	Involved people list");
-        println!("r-	LNK	Linked information");
-        println!("r-	MCI	Music CD Identifier");
-        println!("r-	MLL	MPEG location lookup table");
-        println!("r-	PIC	Attached picture");
-        println!("r-	POP	Popularimeter");
-        println!("r-	REV	Reverb");
-        println!("r-	RVA	Relative volume adjustment");
-        println!("r-	SLT	Synchronized lyric/text");
-        println!("r-	STC	Synced tempo codes");
-        println!("rw	TAL	Album/Movie/Show title");
-        println!("rw	TBP	BPM (Beats Per Minute)");
-        println!("rw	TCM	Composer");
-        println!("rw	TCO	Content type");
-        println!("rw	TCR	Copyright message");
-        println!("rw	TDA	Date (DDMM)");
-        println!("rw	TDY	Playlist delay");
-        println!("rw	TEN	Encoded by");
-        println!("rw	TFT	File type");
-        println!("rw	TIM	Time (HHMM)");
-        println!("rw	TKE	Initial key");
-        println!("rw	TLA	Language(s)");
-        println!("rw	TLE	Length");
-        println!("rw	TMT	Media type");
-        println!("rw	TOA	Original artist(s)/performer(s)");
-        println!("rw	TOF	Original filename");
-        println!("rw	TOL	Original Lyricist(s)/text writer(s)");
-        println!("rw	TOR	Original release year");
-        println!("rw	TOT	Original album/Movie/Show title");
-        println!("rw	TP1	Lead artist(s)/Lead performer(s)/Soloist(s)/Performing group");
-        println!("rw	TP2	Band/Orchestra/Accompaniment");
-        println!("rw	TP3	Conductor/Performer refinement");
-        println!("rw	TP4	Interpreted, remixed, or otherwise modified by");
-        println!("rw	TPA	Part of a set");
-        println!("rw	TPB	Publisher");
-        println!("rw	TRC	ISRC (International Standard Recording Code)");
-        println!("rw	TRD	Recording dates");
-        println!("rw	TRK	Track number/Position in set");
-        println!("rw	TSI	Size");
-        println!("rw	TSS	Software/hardware and settings used for encoding");
-        println!("rw	TT1	Content group description");
-        println!("rw	TT2	Title/Songname/Content description");
-        println!("rw	TT3	Subtitle/Description refinement");
-        println!("rw	TXT	Lyricist/text writer");
-        println!("rw	TXX	User defined text information frame (DESC, TEXT)");
-        println!("rw	TYE	Year (YYYY)");
-        println!("r-	UFI	Unique file identifier");
-        println!("rw	ULT	Unsychronized lyric/text transcription (DESC, LANG, TEXT)");
-        println!("rw	WAF	Official audio file webpage");
-        println!("rw	WAR	Official artist/performer webpage");
-        println!("rw	WAS	Official audio source webpage");
-        println!("rw	WCM	Commercial information");
-        println!("rw	WCP	Copyright/Legal information");
-        println!("rw	WPB	Publishers official webpage");
-        println!("rw	WXX	User defined URL link frame (DESC, URL)");
+        if all {
+            println!();
+            println!("ID3v2.2 exclusive frames:");
+            println!("r-	BUF	Recommended buffer size");
+            println!("r-	CNT	Play counter");
+            println!("rw	COM	Comments (DESC, LANG, TEXT)");
+            println!("r-	CRA	Audio encryption");
+            println!("r-	CRM	Encrypted meta frame");
+            println!("r-	ETC	Event timing codes");
+            println!("r-	EQU	Equalization");
+            println!("r-	GEO	General encapsulated object");
+            println!("r-	IPL	Involved people list");
+            println!("r-	LNK	Linked information");
+            println!("r-	MCI	Music CD Identifier");
+            println!("r-	MLL	MPEG location lookup table");
+            println!("r-	PIC	Attached picture");
+            println!("r-	POP	Popularimeter");
+            println!("r-	REV	Reverb");
+            println!("r-	RVA	Relative volume adjustment");
+            println!("r-	SLT	Synchronized lyric/text");
+            println!("r-	STC	Synced tempo codes");
+            println!("rw	TAL	Album/Movie/Show title");
+            println!("rw	TBP	BPM (Beats Per Minute)");
+            println!("rw	TCM	Composer");
+            println!("rw	TCO	Content type");
+            println!("rw	TCR	Copyright message");
+            println!("rw	TDA	Date (DDMM)");
+            println!("rw	TDY	Playlist delay");
+            println!("rw	TEN	Encoded by");
+            println!("rw	TFT	File type");
+            println!("rw	TIM	Time (HHMM)");
+            println!("rw	TKE	Initial key");
+            println!("rw	TLA	Language(s)");
+            println!("rw	TLE	Length");
+            println!("rw	TMT	Media type");
+            println!("rw	TOA	Original artist(s)/performer(s)");
+            println!("rw	TOF	Original filename");
+            println!("rw	TOL	Original Lyricist(s)/text writer(s)");
+            println!("rw	TOR	Original release year");
+            println!("rw	TOT	Original album/Movie/Show title");
+            println!("rw	TP1	Lead artist(s)/Lead performer(s)/Soloist(s)/Performing group");
+            println!("rw	TP2	Band/Orchestra/Accompaniment");
+            println!("rw	TP3	Conductor/Performer refinement");
+            println!("rw	TP4	Interpreted, remixed, or otherwise modified by");
+            println!("rw	TPA	Part of a set");
+            println!("rw	TPB	Publisher");
+            println!("rw	TRC	ISRC (International Standard Recording Code)");
+            println!("rw	TRD	Recording dates");
+            println!("rw	TRK	Track number/Position in set");
+            println!("rw	TSI	Size");
+            println!("rw	TSS	Software/hardware and settings used for encoding");
+            println!("rw	TT1	Content group description");
+            println!("rw	TT2	Title/Songname/Content description");
+            println!("rw	TT3	Subtitle/Description refinement");
+            println!("rw	TXT	Lyricist/text writer");
+            println!("rw	TXX	User defined text information frame (DESC, TEXT)");
+            println!("rw	TYE	Year (YYYY)");
+            println!("r-	UFI	Unique file identifier");
+            println!("rw	ULT	Unsychronized lyric/text transcription (DESC, LANG, TEXT)");
+            println!("rw	WAF	Official audio file webpage");
+            println!("rw	WAR	Official artist/performer webpage");
+            println!("rw	WAS	Official audio source webpage");
+            println!("rw	WCM	Commercial information");
+            println!("rw	WCP	Copyright/Legal information");
+            println!("rw	WPB	Publishers official webpage");
+            println!("rw	WXX	User defined URL link frame (DESC, URL)");
+        }
     }
 
     /// Construct a Cli object representing passed command-line arguments.
@@ -304,6 +308,7 @@ impl Cli {
         let mut help = false;
         let mut version = false;
         let mut list_frames = false;
+        let mut list_all_frames = false;
         let mut frame_sep: Option<String> = None;
         let mut file_sep: Option<String> = None;
         let mut frame_sep_null = false;
@@ -315,7 +320,8 @@ impl Cli {
             match arg {
                 "-h" | "--help" => { help = true; },
                 "-V" | "--version" => { version = true; },
-                "-L" | "--list-frames" => { list_frames = true; },
+                "-l" | "--list-frames" => { list_frames = true; },
+                "-L" | "--list-all-frames" => { list_all_frames = true; },
                 "-d" | "--frame-sep" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after --frame-sep"));
@@ -555,6 +561,7 @@ impl Cli {
             help,
             version,
             list_frames,
+            list_all_frames,
             frame_sep,
             file_sep,
             frame_sep_null,
