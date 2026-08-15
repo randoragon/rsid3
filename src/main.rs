@@ -40,7 +40,7 @@ fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
     println!("{}: {}, {} frame{}:", fpath.as_ref().display(), tag.version(), n_frames,
         if n_frames == 1 { "" } else { "s" });
     for frame in tag.frames() {
-        print_frame_pretty(frame)?;
+        print_frame_pretty(frame, tag.version())?;
     }
 
     Ok(())
