@@ -134,182 +134,124 @@ impl Cli {
 
     /// Prints the available frames.
     pub fn print_frames(all: bool) {
-        println!("ID3v2.3 and ID3v2.4 common frames:");
-        println!("rw	COMM	User comment (DESC, LANG, TEXT)");
-        println!("r-	CHAP	Chapter");
-        println!("r-	COMR	Commercial frame");
-        println!("r-	CTOC	Table of contents");
-        println!("r-	ENCR	Encryption method registration");
-        println!("r-	ETCO	Event timing codes");
-        println!("r-	GEOB	General encapsulated object");
-        println!("r-	GRID	Group identification registration");
-        println!("r-	GRP1	iTunes grouping (nonstandard)");
-        println!("r-	LINK	Linked information");
-        println!("r-	MCDI	Binary dump of CD's TOC");
-        println!("r-	MLLT	MPEG location lookup table");
-        println!("r-	MVIN	iTunes movement number/count (nonstandard)");
-        println!("r-	MVNM	iTunes movement name (nonstandard)");
-        println!("r-	OWNE	Ownership frame");
-        println!("r-	PCNT	Play counter");
-        println!("r-	PCST	iTunes podcast flag (nonstandard)");
-        println!("r-	POPM	Popularimeter");
-        println!("r-	POSS	Position synchronisation frame");
-        println!("r-	PRIV	Private frame");
-        println!("r-	RBUF	Recommended buffer size");
-        println!("r-	RVRB	Reverb");
-        println!("r-	SYLT	Synchronised lyrics/text");
-        println!("r-	SYTC	Synchronised tempo codes");
-        println!("rw	TALB	Album");
-        println!("rw	TBPM	Beats per minute");
-        println!("rw	TCAT	iTunes podcast category (nonstandard)");
-        println!("rw	TCMP	iTunes compilation flag (nonstandard)");
-        println!("rw	TCOM	Composer");
-        println!("rw	TCON	Content type (genre)");
-        println!("rw	TCOP	Copyright");
-        println!("rw	TDES	iTunes podcast description (nonstandard)");
-        println!("rw	TDLY	Audio delay (ms)");
-        println!("rw	TENC	Encoder");
-        println!("rw	TEXT	Lyricist");
-        println!("rw	TFLT	File type");
-        println!("rw	TGID	iTunes podcast identifier (nonstandard)");
-        println!("rw	TIT1	Content group description");
-        println!("rw	TIT2	Title");
-        println!("rw	TIT3	Subtitle/description refinement");
-        println!("rw	TKEY	Starting key");
-        println!("rw	TKWD	iTunes podcast keywords (nonstandard)");
-        println!("rw	TLAN	Audio languages");
-        println!("rw	TLEN	Audio length (ms)");
-        println!("rw	TMED	Source media type");
-        println!("rw	TOAL	Original album");
-        println!("rw	TOFN	Original filename");
-        println!("rw	TOLY	Original lyricist");
-        println!("rw	TOPE	Original artist/performer");
-        println!("rw	TOWN	Owner/Licensee");
-        println!("rw	TPE1	Lead artist/performer/soloist/group");
-        println!("rw	TPE2	Band/Orchestra/Accompaniment");
-        println!("rw	TPE3	Conductor");
-        println!("rw	TPE4	Interpreter/Remixer/Modifier");
-        println!("rw	TPOS	Part of set");
-        println!("rw	TPUB	Publisher");
-        println!("rw	TRCK	Track number");
-        println!("rw	TRSN	Internet radio station name");
-        println!("rw	TRSO	Internet radio station owner");
-        println!("rw	TSO2	iTunes album artist sort (nonstandard)");
-        println!("rw	TSOC	iTunes composer sort (nonstandard)");
-        println!("rw	TSRC	International Standard Recording Code (ISRC)");
-        println!("rw	TSSE	Encoder settings");
-        println!("rw	TXXX	User-defined text data (DESC, TEXT)");
-        println!("r-	UFID	Unique file identifier");
-        println!("r-	USER	Terms of use");
-        println!("rw	USLT	Unsynchronised lyrics/text transcription (DESC, LANG, TEXT)");
-        println!("rw	WCOM	Commercial information");
-        println!("rw	WCOP	Copyright information");
-        println!("rw	WFED	iTunes podcast feed (nonstandard)");
-        println!("rw	WOAF	Official file information");
-        println!("rw	WOAR	Official artist/performer information");
-        println!("rw	WOAS	Official source information");
-        println!("rw	WORS	Official internet radio information");
-        println!("rw	WPAY	Payment information");
-        println!("rw	WPUB	Official publisher information");
-        println!("rw	WXXX	User-defined URL data (DESC, URL)");
-        println!();
-        println!("ID3v2.4 exclusive frames:");
-        println!("r-	ASPI	Audio seek point index");
-        println!("r-	EQU2	Equalization 2");
-        println!("r-	RVA2	Relative volume adjustment 2");
-        println!("r-	SEEK	Seek frame");
-        println!("r-	SIGN	Signature frame");
-        println!("rw	TDEN	Encoding time");
-        println!("rw	TDOR	Original release time");
-        println!("rw	TDRC	Recording time");
-        println!("rw	TDRL	Release time");
-        println!("rw	TDTG	Tagging time");
-        println!("rw	TIPL	Involved people list");
-        println!("rw	TMCL	Musicians credits list");
-        println!("rw	TMOO	Mood");
-        println!("rw	TPRO	Produced");
-        println!("rw	TSOA	Album sort order key");
-        println!("rw	TSOP	Performer sort order key");
-        println!("rw	TSOT	Title sort order key");
-        println!("rw	TSST	Set subtitle");
-        println!();
-        println!("ID3v2.3 exclusive frames:");
-        println!("r-	EQUA	Equalization");
-        println!("r-	IPLS	Involved people list");
-        println!("r-	RVAD	Relative volume adjustment");
-        println!("rw	TDAT	Date of recording (DDMM)");
-        println!("rw	TIME	Time of recording (HHMM)");
-        println!("rw	TORY	Original release year");
-        println!("rw	TRDA	Recording dates");
-        println!("rw	TSIZ	Size of audio data (bytes)");
-        println!("rw	TYER	Year of recording (YYYY)");
-        if all {
-            println!();
-            println!("ID3v2.2 exclusive frames:");
-            println!("r-	BUF	Recommended buffer size");
-            println!("r-	CNT	Play counter");
-            println!("rw	COM	Comments (DESC, LANG, TEXT)");
-            println!("r-	CRA	Audio encryption");
-            println!("r-	CRM	Encrypted meta frame");
-            println!("r-	ETC	Event timing codes");
-            println!("r-	EQU	Equalization");
-            println!("r-	GEO	General encapsulated object");
-            println!("r-	IPL	Involved people list");
-            println!("r-	LNK	Linked information");
-            println!("r-	MCI	Music CD Identifier");
-            println!("r-	MLL	MPEG location lookup table");
-            println!("r-	PIC	Attached picture");
-            println!("r-	POP	Popularimeter");
-            println!("r-	REV	Reverb");
-            println!("r-	RVA	Relative volume adjustment");
-            println!("r-	SLT	Synchronized lyric/text");
-            println!("r-	STC	Synced tempo codes");
-            println!("rw	TAL	Album/Movie/Show title");
-            println!("rw	TBP	BPM (Beats Per Minute)");
-            println!("rw	TCM	Composer");
-            println!("rw	TCO	Content type");
-            println!("rw	TCR	Copyright message");
-            println!("rw	TDA	Date (DDMM)");
-            println!("rw	TDY	Playlist delay");
-            println!("rw	TEN	Encoded by");
-            println!("rw	TFT	File type");
-            println!("rw	TIM	Time (HHMM)");
-            println!("rw	TKE	Initial key");
-            println!("rw	TLA	Language(s)");
-            println!("rw	TLE	Length");
-            println!("rw	TMT	Media type");
-            println!("rw	TOA	Original artist(s)/performer(s)");
-            println!("rw	TOF	Original filename");
-            println!("rw	TOL	Original Lyricist(s)/text writer(s)");
-            println!("rw	TOR	Original release year");
-            println!("rw	TOT	Original album/Movie/Show title");
-            println!("rw	TP1	Lead artist(s)/Lead performer(s)/Soloist(s)/Performing group");
-            println!("rw	TP2	Band/Orchestra/Accompaniment");
-            println!("rw	TP3	Conductor/Performer refinement");
-            println!("rw	TP4	Interpreted, remixed, or otherwise modified by");
-            println!("rw	TPA	Part of a set");
-            println!("rw	TPB	Publisher");
-            println!("rw	TRC	ISRC (International Standard Recording Code)");
-            println!("rw	TRD	Recording dates");
-            println!("rw	TRK	Track number/Position in set");
-            println!("rw	TSI	Size");
-            println!("rw	TSS	Software/hardware and settings used for encoding");
-            println!("rw	TT1	Content group description");
-            println!("rw	TT2	Title/Songname/Content description");
-            println!("rw	TT3	Subtitle/Description refinement");
-            println!("rw	TXT	Lyricist/text writer");
-            println!("rw	TXX	User defined text information frame (DESC, TEXT)");
-            println!("rw	TYE	Year (YYYY)");
-            println!("r-	UFI	Unique file identifier");
-            println!("rw	ULT	Unsychronized lyric/text transcription (DESC, LANG, TEXT)");
-            println!("rw	WAF	Official audio file webpage");
-            println!("rw	WAR	Official artist/performer webpage");
-            println!("rw	WAS	Official audio source webpage");
-            println!("rw	WCM	Commercial information");
-            println!("rw	WCP	Copyright/Legal information");
-            println!("rw	WPB	Publishers official webpage");
-            println!("rw	WXX	User defined URL link frame (DESC, URL)");
-        }
+        println!("\
+.-------------------------------------------------------------------------------------------------.
+| ID3 standard  | Name | Alias |                          Description                   | Support |
+|-------------------------------------------------------------------------------------------------|
+| 2.2, 2.3, 2.4 | AENC |  CRA  | Audio encryption                                       |    r    |
+| 2.2, 2.3, 2.4 | APIC |  PIC  | Attached (or linked) picture                           |    r    |
+|           2.4 | ASPI |       | Audio seek point index                                 |    r    |
+|      2.3, 2.4 | CHAP |       | Chapter                                                |    r    |
+| 2.2, 2.3, 2.4 | COMM |  COM  | User comment (DESC, LANG, TEXT)                        |   r/w   |
+|      2.3, 2.4 | COMR |       | Commercial frame                                       |    r    |
+| 2.2           | CRM  |       | Encrypted meta frame                                   |    r    |
+|      2.3, 2.4 | CTOC |       | Table of contents                                      |    r    |
+|      2.3, 2.4 | ENCR |       | Encryption method registration                         |    r    |
+| 2.2, 2.3      | EQUA |  EQU  | Equalization                                           |    r    |
+|           2.4 | EQU2 |       | Equalization 2                                         |    r    |
+| 2.2, 2.3, 2.4 | ETCO |  ETC  | Event timing codes                                     |    r    |
+| 2.2, 2.3, 2.4 | GEOB |  GEO  | General encapsulated object                            |    r    |
+|      2.3, 2.4 | GRID |       | Group identification registration                      |    r    |
+|      2.3, 2.4 | GRP1 |       | iTunes grouping (nonstandard)                          |    r    |
+| 2.2, 2.3      | IPLS |  IPL  | Involved people list                                   |    r    |
+| 2.2, 2.3, 2.4 | LINK |  LNK  | Linked information                                     |    r    |
+| 2.2, 2.3, 2.4 | MCDI |  MCI  | Binary dump of CD's TOC                                |    r    |
+| 2.2, 2.3, 2.4 | MLLT |  MLL  | MPEG location lookup table                             |    r    |
+|      2.3, 2.4 | MVIN |       | iTunes movement number/count (nonstandard)             |    r    |
+|      2.3, 2.4 | MVNM |       | iTunes movement name (nonstandard)                     |    r    |
+|      2.3, 2.4 | OWNE |       | Ownership frame                                        |    r    |
+| 2.2, 2.3, 2.4 | PCNT |  CNT  | Play counter                                           |    r    |
+|      2.3, 2.4 | PCST |       | iTunes podcast flag (nonstandard)                      |    r    |
+| 2.2, 2.3, 2.4 | POPM |  POP  | Popularimeter                                          |    r    |
+|      2.3, 2.4 | POSS |       | Position synchronisation frame                         |    r    |
+|      2.3, 2.4 | PRIV |       | Private frame                                          |    r    |
+| 2.2, 2.3, 2.4 | RBUF |  BUF  | Recommended buffer size                                |    r    |
+|      2.3      | RVAD |       | Relative volume adjustment                             |    r    |
+| 2.2,      2.4 | RVA2 |  RVA  | Relative volume adjustment 2                           |    r    |
+| 2.2, 2.3, 2.4 | RVRB |  REV  | Reverb                                                 |    r    |
+|           2.4 | SEEK |       | Seek frame                                             |    r    |
+|           2.4 | SIGN |       | Signature frame                                        |    r    |
+| 2.2, 2.3, 2.4 | SYLT |  SLT  | Synchronised lyrics/text                               |    r    |
+| 2.2, 2.3, 2.4 | SYTC |  STC  | Synchronised tempo codes                               |    r    |
+| 2.2, 2.3, 2.4 | TALB |  TAL  | Album                                                  |   r/w   |
+| 2.2, 2.3, 2.4 | TBPM |  TBP  | Beats per minute                                       |   r/w   |
+|      2.3, 2.4 | TCAT |       | iTunes podcast category (nonstandard)                  |   r/w   |
+|      2.3, 2.4 | TCMP |       | iTunes compilation flag (nonstandard)                  |   r/w   |
+| 2.2, 2.3, 2.4 | TCOM |  TCM  | Composer                                               |   r/w   |
+| 2.2, 2.3, 2.4 | TCON |  TCO  | Content type (genre)                                   |   r/w   |
+| 2.2, 2.3, 2.4 | TCOP |  TCR  | Copyright                                              |   r/w   |
+| 2.2, 2.3      | TDAT |  TDA  | Date of recording (DDMM)                               |   r/w   |
+|           2.4 | TDEN |       | Encoding time (YYYY-MM-DDTHH:MM:SS)                    |   r/w   |
+|      2.3, 2.4 | TDES |       | iTunes podcast description (nonstandard)               |   r/w   |
+| 2.2, 2.3, 2.4 | TDLY |  TDY  | Playlist delay (ms)                                    |   r/w   |
+|           2.4 | TDOR |       | Original release time (YYYY-MM-DDTHH:MM:SS)            |   r/w   |
+|           2.4 | TDRC |       | Recording time (YYYY-MM-DDTHH:MM:SS)                   |   r/w   |
+|           2.4 | TDRL |       | Release time (YYYY-MM-DDTHH:MM:SS)                     |   r/w   |
+|           2.4 | TDTG |       | Tagging time (YYYY-MM-DDTHH:MM:SS)                     |   r/w   |
+| 2.2, 2.3, 2.4 | TENC |  TEN  | Encoder                                                |   r/w   |
+| 2.2, 2.3, 2.4 | TEXT |  TXT  | Lyricist                                               |   r/w   |
+| 2.2, 2.3, 2.4 | TFLT |  TFT  | File type                                              |   r/w   |
+|      2.3, 2.4 | TGID |       | iTunes podcast identifier (nonstandard)                |   r/w   |
+| 2.2, 2.3      | TIME |       | Time of recording (HHMM)                               |   r/w   |
+|           2.4 | TIPL |       | Involved people list                                   |    r    |
+| 2.2, 2.3, 2.4 | TIT1 |  TT1  | Content group description                              |   r/w   |
+| 2.2, 2.3, 2.4 | TIT2 |  TT2  | Title                                                  |   r/w   |
+| 2.2, 2.3, 2.4 | TIT3 |  TT3  | Subtitle/description refinement                        |   r/w   |
+| 2.2, 2.3, 2.4 | TKEY |  TKE  | Starting key                                           |   r/w   |
+|      2.3, 2.4 | TKWD |       | iTunes podcast keywords (nonstandard)                  |   r/w   |
+| 2.2, 2.3, 2.4 | TLAN |  TLA  | Audio languages                                        |   r/w   |
+| 2.2, 2.3, 2.4 | TLEN |  TLE  | Audio length (ms)                                      |   r/w   |
+|           2.4 | TMCL |       | Musicians credits list                                 |    r    |
+| 2.2, 2.3, 2.4 | TMED |  TMT  | Source media type                                      |   r/w   |
+|           2.4 | TMOO |       | Mood                                                   |   r/w   |
+| 2.2, 2.3, 2.4 | TOAL |  TOT  | Original album/movie/show title                        |   r/w   |
+| 2.2, 2.3, 2.4 | TOFN |  TOF  | Original filename                                      |   r/w   |
+| 2.2, 2.3, 2.4 | TOLY |  TOL  | Original lyricist                                      |   r/w   |
+| 2.2, 2.3, 2.4 | TOPE |  TOA  | Original artist/performer                              |   r/w   |
+| 2.2, 2.3      | TORY |  TOR  | Original release year                                  |   r/w   |
+|      2.3, 2.4 | TOWN |       | Owner/Licensee                                         |   r/w   |
+| 2.2, 2.3, 2.4 | TPE1 |  TP1  | Lead artist/performer/soloist/group                    |   r/w   |
+| 2.2, 2.3, 2.4 | TPE2 |  TP2  | Band/Orchestra/Accompaniment                           |   r/w   |
+| 2.2, 2.3, 2.4 | TPE3 |  TP3  | Conductor                                              |   r/w   |
+| 2.2, 2.3, 2.4 | TPE4 |  TP4  | Interpreter/Remixer/Modifier                           |   r/w   |
+| 2.2, 2.3, 2.4 | TPOS |  TPA  | Part of set                                            |   r/w   |
+|           2.4 | TPRO |       | Produced                                               |   r/w   |
+| 2.2, 2.3, 2.4 | TPUB |  TPB  | Publisher                                              |   r/w   |
+| 2.2, 2.3, 2.4 | TRCK |  TRK  | Track number                                           |   r/w   |
+| 2.2, 2.3      | TRDA |  TRD  | Recording dates                                        |   r/w   |
+|      2.3, 2.4 | TRSN |       | Internet radio station name                            |   r/w   |
+|      2.3, 2.4 | TRSO |       | Internet radio station owner                           |   r/w   |
+| 2.2, 2.3      | TSIZ |  TSI  | Size of audio data (bytes)                             |   r/w   |
+|      2.3, 2.4 | TSO2 |       | iTunes album artist sort (nonstandard)                 |   r/w   |
+|           2.4 | TSOA |       | Album sort order key                                   |   r/w   |
+|      2.3, 2.4 | TSOC |       | iTunes composer sort (nonstandard)                     |   r/w   |
+|           2.4 | TSOP |       | Performer sort order key                               |   r/w   |
+|           2.4 | TSOT |       | Title sort order key                                   |   r/w   |
+| 2.2, 2.3, 2.4 | TSRC |  TRC  | International Standard Recording Code (ISRC)           |   r/w   |
+| 2.2, 2.3, 2.4 | TSSE |  TSS  | Encoder settings                                       |   r/w   |
+|           2.4 | TSST |       | Set subtitle                                           |   r/w   |
+| 2.2, 2.3, 2.4 | TXXX |  TXX  | User-defined text data (DESC, TEXT)                    |   r/w   |
+| 2.2, 2.3      | TYER |  TYE  | Year of recording (YYYY)                               |   r/w   |
+| 2.2, 2.3, 2.4 | UFID |  UFI  | Unique file identifier                                 |    r    |
+|      2.3, 2.4 | USER |       | Terms of use                                           |    r    |
+| 2.2, 2.3, 2.4 | USLT |  ULT  | Unsynchronised lyrics/transcription (DESC, LANG, TEXT) |   r/w   |
+| 2.2, 2.3, 2.4 | WCOM |  WCM  | Commercial information                                 |   r/w   |
+| 2.2, 2.3, 2.4 | WCOP |  WCP  | Copyright information                                  |   r/w   |
+|      2.3, 2.4 | WFED |       | iTunes podcast feed (nonstandard)                      |   r/w   |
+| 2.2, 2.3, 2.4 | WOAF |  WAF  | Official file information                              |   r/w   |
+| 2.2, 2.3, 2.4 | WOAR |  WAR  | Official artist/performer information                  |   r/w   |
+| 2.2, 2.3, 2.4 | WOAS |  WAS  | Official source information                            |   r/w   |
+|      2.3, 2.4 | WORS |       | Official internet radio information                    |   r/w   |
+|      2.3, 2.4 | WPAY |       | Payment information                                    |   r/w   |
+| 2.2, 2.3, 2.4 | WPUB |  WPB  | Official publisher information                         |   r/w   |
+| 2.2, 2.3, 2.4 | WXXX |  WXX  | User-defined URL data (DESC, URL)                      |   r/w   |
+`-------------------------------------------------------------------------------------------------`
+
+                           ID3v1                                 ID3v2.3
+                   http://id3.org/ID3v1                  http://id3.org/id3v2.3.0
+
+                          ID3v2.2                                ID3v2.4
+                  http://id3.org/id3v2-00            http://id3.org/id3v2.4.0-frames\n");
     }
 
     /// Construct a Cli object representing passed command-line arguments.
