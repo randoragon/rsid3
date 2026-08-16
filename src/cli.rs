@@ -24,7 +24,6 @@ pub struct Cli {
     pub help: bool,
     pub version: bool,
     pub list_frames: bool,
-    pub list_all_frames: bool,
     pub frame_sep: Option<String>,
     pub file_sep: Option<String>,
     pub frame_sep_null: bool,
@@ -84,8 +83,7 @@ impl Cli {
         println!("Options:");
         println!("  -h, --help               Show this help and exit.");
         println!("  -V, --version            Print version information.");
-        println!("  -l, --list-frames        List supported ID3v2.3 and ID3v2.4 frames.");
-        println!("  -L, --list-all-frames    List all supported frames (including ID3v.2.2).");
+        println!("  -L, --list-frames        List all supported frames.");
         println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \"\\n\").");
         println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \"\\n\").");
         println!("  -0d, --frame-sep-null    Separate printed frames with the null byte.");
@@ -133,7 +131,7 @@ impl Cli {
     }
 
     /// Prints the available frames.
-    pub fn print_frames(all: bool) {
+    pub fn print_all_frames() {
         println!("\
 .-------------------------------------------------------------------------------------------------.
 | ID3 standard  | Name | Alias |                          Description                   | Support |
@@ -260,7 +258,6 @@ impl Cli {
         let mut help = false;
         let mut version = false;
         let mut list_frames = false;
-        let mut list_all_frames = false;
         let mut frame_sep: Option<String> = None;
         let mut file_sep: Option<String> = None;
         let mut frame_sep_null = false;
@@ -272,8 +269,7 @@ impl Cli {
             match arg {
                 "-h" | "--help" => { help = true; },
                 "-V" | "--version" => { version = true; },
-                "-l" | "--list-frames" => { list_frames = true; },
-                "-L" | "--list-all-frames" => { list_all_frames = true; },
+                "-L" | "--list-frames" => { list_frames = true; },
                 "-d" | "--frame-sep" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after --frame-sep"));
@@ -476,7 +472,6 @@ impl Cli {
             help,
             version,
             list_frames,
-            list_all_frames,
             frame_sep,
             file_sep,
             frame_sep_null,

@@ -95,8 +95,8 @@ fn main() -> ExitCode {
         return ExitCode::SUCCESS;
     }
 
-    if cli.list_frames || cli.list_all_frames {
-        Cli::print_frames(cli.list_all_frames);
+    if cli.list_frames {
+        Cli::print_all_frames();
         return ExitCode::SUCCESS;
     }
 
