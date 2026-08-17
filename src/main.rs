@@ -29,10 +29,10 @@ enum ExitCode {
     Success = 0,
 
     /// The user passed incorrect arguments.
-    BadArg = 1,
+    BadArg = 255,
 
     /// Executing some action failed.
-    ActionFailed = 2,
+    ActionFailed = 254,
 }
 impl std::process::Termination for ExitCode {
     fn report(self) -> std::process::ExitCode {
