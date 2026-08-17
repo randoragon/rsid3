@@ -219,7 +219,7 @@ pub fn print_frame_pretty(frame: &Frame, version: Version) -> Result<()> {
 
 /// Deletes a frame matching a query from a tag.
 /// `fpath` is only used for message prints.
-/// Returns whether tag was modified.
+/// Returns whether the frame was found and deleted.
 pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
     let mut found = false;
 
@@ -234,9 +234,8 @@ pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: impl AsRef<Path>) -
     }
     if !found {
         eprintln!("{}: Could not delete {}: Frame not found", fpath.as_ref().display(), frame_to_string(frame)?);
-        return Ok(false);
     }
-    Ok(true)
+    Ok(found)
 }
 
 /// Returns whether two frames are identical except for the relevant content component.
