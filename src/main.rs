@@ -19,9 +19,28 @@ mod id3_helpers;
 use cli::{Cli, Action, ConvertOpt, PurgeOpt};
 use std::path::Path;
 use id3_helpers::*;
-use std::process::ExitCode;
 use anyhow::{anyhow, Result};
 use id3::{Tag, TagLike, Version};
+
+/// Exit codes used for various situations.
+enum ExitCode {
+    /// Process finished successfully.
+    Success = 0,
+
+    /// The user passed incorrect arguments.
+    BadArg = 1,
+
+    /// Executing some action failed.
+    ActionFailed = 2,
+}
+impl std::process::Termination for ExitCode {
+    fn report(self) -> std::process::ExitCode {
+        match self {
+            ExitCode::Success => std::process::ExitCode::SUCCESS,
+            v => std::process::ExitCode::from(v as u8),
+        }
+    }
+}
 
 /// Pretty-prints all supported frames stored in the file.
 fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
@@ -70,29 +89,29 @@ fn main() -> ExitCode {
         Ok(cli) => cli,
         Err(e) => {
             eprintln!("rsid3: {e}, try 'rsid3 --help'");
-            return ExitCode::FAILURE;
+            return ExitCode::BadArg;
         }
     };
 
     if cli.help {
         Cli::print_usage();
-        return ExitCode::SUCCESS;
+        return ExitCode::Success;
     }
 
     if cli.version {
         Cli::print_version();
-        return ExitCode::SUCCESS;
+        return ExitCode::Success;
     }
 
     if cli.list_frames {
         Cli::print_all_frames();
-        return ExitCode::SUCCESS;
+        return ExitCode::Success;
     }
 
     // Define the separators
     if cli.frame_sep.is_some() && cli.frame_sep_null {
         eprintln!("rsid3: --frame-sep and --frame-sep-null options are mutually exclusive");
-        return ExitCode::FAILURE;
+        return ExitCode::BadArg;
     }
     let frame_sep = if cli.frame_sep_null {
         '\0'.to_string()
@@ -101,7 +120,7 @@ fn main() -> ExitCode {
     };
     if cli.file_sep.is_some() && cli.file_sep_null {
         eprintln!("rsid3: --file-sep and --file-sep-null options are mutually exclusive");
-        return ExitCode::FAILURE;
+        return ExitCode::BadArg;
     }
     let file_sep = if cli.file_sep_null {
         '\0'.to_string()
@@ -147,7 +166,7 @@ fn main() -> ExitCode {
                         }
                         if let Err(e) = print_tag_frame_query(&tag, &frame.to_id3_frame(), fpath) {
                             eprintln!("rsid3: {e}");
-                            return ExitCode::FAILURE;
+                            return ExitCode::ActionFailed;
                         }
                     },
                     Action::Set(frame) => {
@@ -161,7 +180,7 @@ fn main() -> ExitCode {
                             },
                             Err(e) => {
                                 eprintln!("rsid3: {e}");
-                                return ExitCode::FAILURE;
+                                return ExitCode::ActionFailed;
                             },
                         }
                     },
@@ -172,7 +191,7 @@ fn main() -> ExitCode {
                             },
                             Err(e) => {
                                 eprintln!("rsid3: {e}");
-                                return ExitCode::FAILURE;
+                                return ExitCode::ActionFailed;
                             },
                         }
                     },
@@ -201,14 +220,14 @@ fn main() -> ExitCode {
             if tag_was_modified {
                 if let Err(e) = try_write_tag(&tag, &fpath, tag.version()) {
                     eprintln!("rsid3: {e}");
-                    return ExitCode::FAILURE;
+                    return ExitCode::ActionFailed;
                 }
             }
         }
     } else /* if cli.actions.is_empty() */ {
         if cli.files.is_empty() {
             Cli::print_usage();
-            return ExitCode::FAILURE;
+            return ExitCode::BadArg;
         }
 
         // Print all frames if no options supplied
@@ -221,10 +240,10 @@ fn main() -> ExitCode {
             }
             if let Err(e) = print_all_file_frames_pretty(fpath) {
                 eprintln!("rsid3: {e}");
-                return ExitCode::FAILURE;
+                return ExitCode::ActionFailed;
             }
         }
     }
 
-    ExitCode::SUCCESS
+    ExitCode::Success
 }
