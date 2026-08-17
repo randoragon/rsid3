@@ -15,7 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 use std::env::args;
 use anyhow::{anyhow, Result};
-use id3::Content;
+use id3::{Content, Tag, Version};
 use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
 
 /// Represents all options passed to the program on the command line.
@@ -490,29 +490,7 @@ impl Cli {
     /// Checks if a command-line argument is a setter argument.
     fn is_setter_arg(arg: &str) -> bool {
         (arg.len() == 7 || arg.len() == 6) && arg.starts_with("--") && arg.ends_with('=')
-        && (matches!(&arg[2..(arg.len() - 1)],
-            // ID3v2.3 / ID3v2.4 frames
-            "COMM" | "TALB" | "TBPM" | "TCAT" | "TCMP" | "TCOM" | "TCON" | "TCOP" |
-            "TDAT" | "TDEN" | "TDES" | "TDLY" | "TDOR" | "TDRC" | "TDRL" | "TDTG" |
-            "TENC" | "TEXT" | "TFLT" | "TGID" | "TIME" | "TIPL" | "TIT1" | "TIT2" |
-            "TIT3" | "TKEY" | "TKWD" | "TLAN" | "TLEN" | "TMCL" | "TMED" | "TMOO" |
-            "TOAL" | "TOFN" | "TOLY" | "TOPE" | "TORY" | "TOWN" | "TPE1" | "TPE2" |
-            "TPE3" | "TPE4" | "TPOS" | "TPRO" | "TPUB" | "TRCK" | "TRDA" | "TRSN" |
-            "TRSO" | "TSIZ" | "TSO2" | "TSOA" | "TSOC" | "TSOP" | "TSOT" | "TSRC" |
-            "TSSE" | "TSST" | "TXXX" | "TYER" | "USLT" | "WCOM" | "WCOP" | "WFED" |
-            "WOAF" | "WOAR" | "WOAS" | "WORS" | "WPAY" | "WPUB" | "WXXX" |
-
-            // ID3v2.2 frames
-            "TT1" | "TT2" | "TT3" | "TP1" | "TP2" | "TP3" | "TP4" | "TCM" |
-            "TXT" | "TLA" | "TCO" | "TAL" | "TPA" | "TRK" | "TRC" | "TYE" |
-            "TDA" | "TIM" | "TRD" | "TMT" | "TFT" | "TBP" | "TCR" | "TPB" |
-            "TEN" | "TSS" | "TOF" | "TLE" | "TSI" | "TDY" | "TKE" | "TOT" |
-            "TOA" | "TOL" | "TOR" | "TXX" | "ULT" | "COM")
-
-        // ID3v2.2 URL frames have names "W00" - "WZZ", excluding "WXX".
-        // "WXX" is a user-defined URL link frame, which rsid3 also supports.
-        || arg[2..(arg.len() - 1)].chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
-    )
+        && (arg[2..(arg.len() - 1)]).chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 
     /// Checks if a command-line argument is a delete argument.
@@ -563,6 +541,49 @@ impl Frame {
             },
 
             _ => id3::Frame::text(self.id.clone(), self.content.clone().unwrap_or_default()),
+        }
+    }
+}
+
+impl Action {
+    // Returns `Ok(())` if the action is supported by rsid3, or an `Err()` reason why not.
+    pub fn is_supported(&self, tag: &Tag) -> Result<()> {
+        match self {
+            Self::Set(frame) => {
+                let id = &frame.id;
+
+                // Enforcing correct length makes it easier to support custom T00-TZZ/T000-TZZZ
+                // frames etc., even though technically we could automatically convert the standard
+                // frames between their 3 and 4 -character variants.
+                if tag.version() == Version::Id3v22 && id.len() != 3 {
+                    return Err(anyhow!("Please use 3-character frame IDs for ID3v2.2 tags"))
+                }
+                if id.len() != 4 && (tag.version() == Version::Id3v23 || tag.version() == Version::Id3v24) {
+                    return Err(anyhow!("Please use 4-character frame IDs for ID3v2.3 and ID3v2.4 tags"))
+                }
+
+                // Text frames names "T00" - "TZZ" or "T000" - "TZZZ", including "TXX" and "TXXX",
+                // but excluding TIPL/TMCL, because I do not understand their encoding.
+                if id.starts_with('T')
+                    && id.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+                    && !matches!(id.as_str(), "TIPL" | "TMCL") {
+                    return Ok(())
+                }
+
+                // URL frames names "W00" - "WZZ" or "W000" - "WZZZ", including "WXX" and "WXXX".
+                if id.starts_with('W')
+                    && id.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit()) {
+                    return Ok(())
+                }
+
+                // These are supported as well
+                if matches!(id.as_str(), "COMM" | "USLT" | "COM" | "ULT") {
+                    return Ok(())
+                }
+
+                Err(anyhow!("Writing the {id} frame is not supported, try 'rsid3 --list-frames'"))
+            },
+            _ => Ok(())
         }
     }
 }

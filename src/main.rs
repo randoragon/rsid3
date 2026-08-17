@@ -130,6 +130,9 @@ fn main() -> ExitCode {
             let mut is_first_frame_print = true;
 
             for action in &cli.actions {
+                if let Err(e) = action.is_supported(&tag) {
+                    eprintln!("rsid3: {e}");
+                }
                 match action {
                     Action::Print(frame) => {
                         if !is_first_frame_print {
