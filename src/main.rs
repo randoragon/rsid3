@@ -153,18 +153,12 @@ fn main() -> ExitCode {
                                 is_first_file_print = false;
                             }
                         }
-                        if (frame.id.len() == 3 && tag.version() != Version::Id3v22) || (frame.id.len() == 4 && tag.version() == Version::Id3v22) {
-                            continue;
-                        }
                         if let Err(e) = print_tag_frame_query(&tag, &frame.to_id3_frame(), fpath) {
                             eprintln!("rsid3: {e}");
                             return ExitCode::FAILURE;
                         }
                     },
                     Action::Set(frame) => {
-                        if (frame.id.len() == 3 && tag.version() != Version::Id3v22) || (frame.id.len() == 4 && tag.version() == Version::Id3v22) {
-                            continue;
-                        }
                         match set_tag_frame(&mut tag, frame.to_id3_frame()) {
                             Ok(_) => {
                                 tag_was_modified = true;
@@ -176,9 +170,6 @@ fn main() -> ExitCode {
                         }
                     },
                     Action::Delete(frame) => {
-                        if (frame.id.len() == 3 && tag.version() != Version::Id3v22) || (frame.id.len() == 4 && tag.version() == Version::Id3v22) {
-                            continue;
-                        }
                         match delete_tag_frame(&mut tag, &frame.to_id3_frame(), fpath) {
                             Ok(modified) => {
                                 tag_was_modified |= modified;
