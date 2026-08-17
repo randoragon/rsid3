@@ -23,6 +23,7 @@ use anyhow::{anyhow, Result};
 use id3::{Tag, TagLike, Version};
 
 /// Exit codes used for various situations.
+#[derive(Debug)]
 enum ExitCode {
     /// Process finished successfully.
     Success = 0,
