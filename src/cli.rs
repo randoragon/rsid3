@@ -540,6 +540,12 @@ impl Frame {
                 id3::Frame::with_content(self.id.clone(), Content::ExtendedLink(extended_link))
             },
 
+            // "W000" - "WZZZ" and "W00" - "WZZ" link frames
+            x if x.starts_with('W') => {
+                let link = self.content.clone().unwrap_or_default();
+                id3::Frame::with_content(self.id.clone(), Content::Link(link))
+            },
+
             _ => id3::Frame::text(self.id.clone(), self.content.clone().unwrap_or_default()),
         }
     }
