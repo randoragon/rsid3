@@ -552,7 +552,7 @@ impl Frame {
 }
 
 impl Action {
-    // Returns `Ok(())` if the action is supported by rsid3, or an `Err()` reason why not.
+    /// Returns `Ok(())` if the action is supported by rsid3, or an `Err()` reason why not.
     pub fn is_supported(&self, tag: &Tag) -> Result<()> {
         match self {
             Self::Set(frame) => {
