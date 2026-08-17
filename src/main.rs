@@ -21,7 +21,7 @@ use std::path::Path;
 use id3_helpers::*;
 use std::process::ExitCode;
 use anyhow::{anyhow, Result};
-use id3::{Tag, TagLike, Frame, Version};
+use id3::{Tag, TagLike, Version};
 
 /// Pretty-prints all supported frames stored in the file.
 fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
@@ -44,17 +44,6 @@ fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
     }
 
     Ok(())
-}
-
-/// Writes a frame into a tag. The previous value is overwritten, if any.
-fn set_tag_frame(tag: &mut Tag, frame: Frame) -> Result<()> {
-    match frame.id() {
-        x if (x.starts_with('T') && x != "TIPL") || x.starts_with('W') || x == "COMM" || x == "USLT" => {
-            let _ = tag.add_frame(frame);
-            Ok(())
-        },
-        _ => Err(anyhow!("Writing to {} is not supported", frame.id())),
-    }
 }
 
 /// Converts a tag according to the given command-line option.
@@ -159,15 +148,8 @@ fn main() -> ExitCode {
                         }
                     },
                     Action::Set(frame) => {
-                        match set_tag_frame(&mut tag, frame.to_id3_frame()) {
-                            Ok(_) => {
-                                tag_was_modified = true;
-                            },
-                            Err(e) => {
-                                eprintln!("rsid3: {e}");
-                                return ExitCode::FAILURE;
-                            },
-                        }
+                        let _ = tag.add_frame(frame.to_id3_frame());
+                        tag_was_modified = true;
                     },
                     Action::Delete(frame) => {
                         match delete_tag_frame(&mut tag, &frame.to_id3_frame(), fpath) {
