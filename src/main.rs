@@ -53,7 +53,7 @@ fn set_tag_frame(tag: &mut Tag, frame: Frame) -> Result<()> {
             let _ = tag.add_frame(frame);
             Ok(())
         },
-        _ => Err(anyhow!("Writing to {frame} is not supported")),
+        _ => Err(anyhow!("Writing to {} is not supported", frame.id())),
     }
 }
 
