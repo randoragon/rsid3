@@ -21,7 +21,7 @@ use std::path::Path;
 use id3_helpers::*;
 use std::process::ExitCode;
 use anyhow::{anyhow, Result};
-use id3::{Tag, TagLike, Frame, Version};
+use id3::{Tag, TagLike, Version};
 
 /// Pretty-prints all supported frames stored in the file.
 fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
@@ -40,21 +40,10 @@ fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
     println!("{}: {}, {} frame{}:", fpath.as_ref().display(), tag.version(), n_frames,
         if n_frames == 1 { "" } else { "s" });
     for frame in tag.frames() {
-        print_frame_pretty(frame)?;
+        print_frame_pretty(frame, tag.version())?;
     }
 
     Ok(())
-}
-
-/// Writes a frame into a tag. The previous value is overwritten, if any.
-fn set_tag_frame(tag: &mut Tag, frame: Frame) -> Result<()> {
-    match frame.id() {
-        x if (x.starts_with('T') && x != "TIPL") || x.starts_with('W') || x == "COMM" || x == "USLT" => {
-            let _ = tag.add_frame(frame);
-            Ok(())
-        },
-        _ => Err(anyhow!("Writing to {frame} is not supported")),
-    }
 }
 
 /// Converts a tag according to the given command-line option.
@@ -141,6 +130,9 @@ fn main() -> ExitCode {
             let mut is_first_frame_print = true;
 
             for action in &cli.actions {
+                if let Err(e) = action.is_supported(&tag) {
+                    eprintln!("rsid3: {e}");
+                }
                 match action {
                     Action::Print(frame) => {
                         if !is_first_frame_print {
@@ -153,24 +145,17 @@ fn main() -> ExitCode {
                                 is_first_file_print = false;
                             }
                         }
-                        if let Err(e) = print_tag_frame_query(&tag, frame, fpath) {
+                        if let Err(e) = print_tag_frame_query(&tag, &frame.to_id3_frame(), fpath) {
                             eprintln!("rsid3: {e}");
                             return ExitCode::FAILURE;
                         }
                     },
                     Action::Set(frame) => {
-                        match set_tag_frame(&mut tag, frame.clone()) {
-                            Ok(_) => {
-                                tag_was_modified = true;
-                            },
-                            Err(e) => {
-                                eprintln!("rsid3: {e}");
-                                return ExitCode::FAILURE;
-                            },
-                        }
+                        let _ = tag.add_frame(frame.to_id3_frame());
+                        tag_was_modified = true;
                     },
                     Action::Delete(frame) => {
-                        match delete_tag_frame(&mut tag, frame, fpath) {
+                        match delete_tag_frame(&mut tag, &frame.to_id3_frame(), fpath) {
                             Ok(modified) => {
                                 tag_was_modified |= modified;
                             },

@@ -15,7 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 use std::env::args;
 use anyhow::{anyhow, Result};
-use id3::{Frame, Content};
+use id3::{Content, Tag, Version};
 use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
 
 /// Represents all options passed to the program on the command line.
@@ -62,6 +62,16 @@ pub enum PurgeOpt {
     All,
 }
 
+/// Represents a single "frame argument" with its associated subarguments,
+/// e.g. --TIT2, --TT2= val, etc.
+#[derive(Debug, Clone)]
+pub struct Frame {
+    pub id: String,
+    pub desc: Option<String>,
+    pub lang: Option<String>,
+    pub content: Option<String>,
+}
+
 impl Cli {
     /// Prints how to use the program.
     pub fn print_usage() {
@@ -74,20 +84,20 @@ impl Cli {
         println!("  -h, --help               Show this help and exit.");
         println!("  -V, --version            Print version information.");
         println!("  -L, --list-frames        List all supported frames.");
-        println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \\n).");
-        println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \\n).");
+        println!("  -d SEP, --frame-sep SEP  Separate printed frames with SEP (default: \"\\n\").");
+        println!("  -D SEP, --file-sep SEP   Separate printed files with SEP (default: \"\\n\").");
         println!("  -0d, --frame-sep-null    Separate printed frames with the null byte.");
         println!("  -0D, --file-sep-null     Separate printed files with the null byte.");
         println!();
         println!("  --FRAME                  Print the value of FRAME.");
-        println!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX).");
-        println!("  --FRAME DESC LANG        Print the value of FRAME (COMM, USLT).");
+        println!("  --FRAME DESC             Print the value of FRAME (TXXX, WXXX, TXX, WXX).");
+        println!("  --FRAME DESC LANG        Print the value of FRAME (COMM, USLT, COM, ULT).");
         println!("  --FRAME= TEXT            Set the value of FRAME.");
-        println!("  --FRAME= DESC TEXT       Set the value of FRAME (TXXX, WXXX).");
+        println!("  --FRAME= DESC TEXT       Set the value of FRAME (TXXX, WXXX, TXX, WXX).");
         println!("  --FRAME= DESC LANG TEXT  Set the value of FRAME (COMM, USLT).");
         println!("  --FRAME-                 Delete FRAME.");
-        println!("  --FRAME- DESC            Delete FRAME (TXXX, WXXX).");
-        println!("  --FRAME- DESC LANG       Delete FRAME (COMM, USLT).");
+        println!("  --FRAME- DESC            Delete FRAME (TXXX, WXXX, TXX, WXX).");
+        println!("  --FRAME- DESC LANG       Delete FRAME (COMM, USLT, COM, ULT).");
         println!();
         println!("  --id3v2.2                Convert tags to ID3v2.2 (lossless; may fail).");
         println!("  --id3v2.3                Convert tags to ID3v2.3 (lossless; may fail).");
@@ -122,114 +132,124 @@ impl Cli {
 
     /// Prints the available frames.
     pub fn print_all_frames() {
-        println!("Read-write frames:");
-        println!("COMM	User comment (DESC, LANG, TEXT)");
-        println!("TALB	Album");
-        println!("TBPM	Beats per minute");
-        println!("TCAT	iTunes podcast category");
-        println!("TCMP	iTunes compilation flag");
-        println!("TCOM	Composer");
-        println!("TCON	Content type (genre)");
-        println!("TCOP	Copyright");
-        println!("TDAT	Date of recording (DDMM)");
-        println!("TDEN	Encoding time");
-        println!("TDES	iTunes podcast description");
-        println!("TDLY	Audio delay (ms)");
-        println!("TDOR	Original release time");
-        println!("TDRC	Recording time");
-        println!("TDRL	Release time");
-        println!("TDTG	Tagging time");
-        println!("TENC	Encoder");
-        println!("TEXT	Lyricist");
-        println!("TFLT	File type");
-        println!("TGID	iTunes podcast identifier");
-        println!("TIME	Time of recording (HHMM)");
-        println!("TIPL	Involved people list");
-        println!("TIT1	Content group description");
-        println!("TIT2	Title");
-        println!("TIT3	Subtitle/description refinement");
-        println!("TKEY	Starting key");
-        println!("TKWD	iTunes podcast keywords");
-        println!("TLAN	Audio languages");
-        println!("TLEN	Audio length (ms)");
-        println!("TMCL	Musicians credits list");
-        println!("TMED	Source media type");
-        println!("TMOO	Mood");
-        println!("TOAL	Original album");
-        println!("TOFN	Original filename");
-        println!("TOLY	Original lyricist");
-        println!("TOPE	Original artist/performer");
-        println!("TORY	Original release year");
-        println!("TOWN	Owner/Licensee");
-        println!("TPE1	Lead artist/performer/soloist/group");
-        println!("TPE2	Band/Orchestra/Accompaniment");
-        println!("TPE3	Conductor");
-        println!("TPE4	Interpreter/Remixer/Modifier");
-        println!("TPOS	Part of set");
-        println!("TPRO	Produced");
-        println!("TPUB	Publisher");
-        println!("TRCK	Track number");
-        println!("TRDA	Recording dates");
-        println!("TRSN	Internet radio station name");
-        println!("TRSO	Internet radio station owner");
-        println!("TSIZ	Size of audio data (bytes)");
-        println!("TSO2	iTunes album artist sort");
-        println!("TSOA	Album sort order key");
-        println!("TSOC	iTunes composer sort");
-        println!("TSOP	Performer sort order key");
-        println!("TSOT	Title sort order key");
-        println!("TSRC	International Standard Recording Code (ISRC)");
-        println!("TSSE	Encoder settings");
-        println!("TSST	Set subtitle");
-        println!("TXXX	User-defined text data (DESC, TEXT)");
-        println!("TYER	Year of recording");
-        println!("USLT	Unsynchronised lyrics/text transcription (DESC, LANG, TEXT)");
-        println!("WCOM	Commercial information");
-        println!("WCOP	Copyright information");
-        println!("WFED	iTunes podcast feed");
-        println!("WOAF	Official file information");
-        println!("WOAR	Official artist/performer information");
-        println!("WOAS	Official source information");
-        println!("WORS	Official internet radio information");
-        println!("WPAY	Payment information");
-        println!("WPUB	Official publisher information");
-        println!("WXXX	User-defined URL data (DESC, URL)");
-        println!();
-        println!("Read-only frames (rudimentary support):");
-        println!("AENC	Audio encryption");
-        println!("APIC	Attached (or linked) picture");
-        println!("ASPI	Audio seek point index");
-        println!("CHAP	Chapter");
-        println!("COMR	Commercial frame");
-        println!("CTOC	Table of contents");
-        println!("ENCR	Encryption method registration");
-        println!("EQU2	Equalization 2");
-        println!("ETCO	Event timing codes");
-        println!("GEOB	General encapsulated object");
-        println!("GRID	Group identification registration");
-        println!("GRP1	iTunes grouping");
-        println!("IPLS	Involved people list");
-        println!("LINK	Linked information");
-        println!("MCDI	Binary dump of CD's TOC");
-        println!("MLLT	MPEG location lookup table");
-        println!("MVIN	iTunes movement number/count");
-        println!("MVNM	iTunes movement name");
-        println!("OWNE	Ownership frame");
-        println!("PCNT	Play counter");
-        println!("PCST	iTunes podcast flag");
-        println!("POPM	Popularimeter");
-        println!("POSS	Position synchronisation frame");
-        println!("PRIV	Private frame");
-        println!("RBUF	Recommended buffer size");
-        println!("RVA2	Relative volume adjustment 2");
-        println!("RVAD	Relative volume adjustment");
-        println!("RVRB	Reverb");
-        println!("SEEK	Seek frame");
-        println!("SIGN	Signature frame");
-        println!("SYLT	Synchronised lyrics/text");
-        println!("SYTC	Synchronised tempo codes");
-        println!("UFID	Unique file identifier");
-        println!("USER	Terms of use");
+        println!("\
+.-------------------------------------------------------------------------------------------------.
+| ID3 standard  | Name | Alias |                          Description                   | Support |
+|-------------------------------------------------------------------------------------------------|
+| 2.2, 2.3, 2.4 | AENC |  CRA  | Audio encryption                                       |    r    |
+| 2.2, 2.3, 2.4 | APIC |  PIC  | Attached (or linked) picture                           |    r    |
+|           2.4 | ASPI |       | Audio seek point index                                 |    r    |
+|      2.3, 2.4 | CHAP |       | Chapter                                                |    r    |
+| 2.2, 2.3, 2.4 | COMM |  COM  | User comment (DESC, LANG, TEXT)                        |   r/w   |
+|      2.3, 2.4 | COMR |       | Commercial frame                                       |    r    |
+| 2.2           | CRM  |       | Encrypted meta frame                                   |    r    |
+|      2.3, 2.4 | CTOC |       | Table of contents                                      |    r    |
+|      2.3, 2.4 | ENCR |       | Encryption method registration                         |    r    |
+| 2.2, 2.3      | EQUA |  EQU  | Equalization                                           |    r    |
+|           2.4 | EQU2 |       | Equalization 2                                         |    r    |
+| 2.2, 2.3, 2.4 | ETCO |  ETC  | Event timing codes                                     |    r    |
+| 2.2, 2.3, 2.4 | GEOB |  GEO  | General encapsulated object                            |    r    |
+|      2.3, 2.4 | GRID |       | Group identification registration                      |    r    |
+|      2.3, 2.4 | GRP1 |       | iTunes grouping (nonstandard)                          |    r    |
+| 2.2, 2.3      | IPLS |  IPL  | Involved people list                                   |    r    |
+| 2.2, 2.3, 2.4 | LINK |  LNK  | Linked information                                     |    r    |
+| 2.2, 2.3, 2.4 | MCDI |  MCI  | Binary dump of CD's TOC                                |    r    |
+| 2.2, 2.3, 2.4 | MLLT |  MLL  | MPEG location lookup table                             |    r    |
+|      2.3, 2.4 | MVIN |       | iTunes movement number/count (nonstandard)             |    r    |
+|      2.3, 2.4 | MVNM |       | iTunes movement name (nonstandard)                     |    r    |
+|      2.3, 2.4 | OWNE |       | Ownership frame                                        |    r    |
+| 2.2, 2.3, 2.4 | PCNT |  CNT  | Play counter                                           |    r    |
+|      2.3, 2.4 | PCST |       | iTunes podcast flag (nonstandard)                      |    r    |
+| 2.2, 2.3, 2.4 | POPM |  POP  | Popularimeter                                          |    r    |
+|      2.3, 2.4 | POSS |       | Position synchronisation frame                         |    r    |
+|      2.3, 2.4 | PRIV |       | Private frame                                          |    r    |
+| 2.2, 2.3, 2.4 | RBUF |  BUF  | Recommended buffer size                                |    r    |
+|      2.3      | RVAD |       | Relative volume adjustment                             |    r    |
+| 2.2,      2.4 | RVA2 |  RVA  | Relative volume adjustment 2                           |    r    |
+| 2.2, 2.3, 2.4 | RVRB |  REV  | Reverb                                                 |    r    |
+|           2.4 | SEEK |       | Seek frame                                             |    r    |
+|           2.4 | SIGN |       | Signature frame                                        |    r    |
+| 2.2, 2.3, 2.4 | SYLT |  SLT  | Synchronised lyrics/text                               |    r    |
+| 2.2, 2.3, 2.4 | SYTC |  STC  | Synchronised tempo codes                               |    r    |
+| 2.2, 2.3, 2.4 | TALB |  TAL  | Album                                                  |   r/w   |
+| 2.2, 2.3, 2.4 | TBPM |  TBP  | Beats per minute                                       |   r/w   |
+|      2.3, 2.4 | TCAT |       | iTunes podcast category (nonstandard)                  |   r/w   |
+|      2.3, 2.4 | TCMP |       | iTunes compilation flag (nonstandard)                  |   r/w   |
+| 2.2, 2.3, 2.4 | TCOM |  TCM  | Composer                                               |   r/w   |
+| 2.2, 2.3, 2.4 | TCON |  TCO  | Content type (genre)                                   |   r/w   |
+| 2.2, 2.3, 2.4 | TCOP |  TCR  | Copyright                                              |   r/w   |
+| 2.2, 2.3      | TDAT |  TDA  | Date of recording (DDMM)                               |   r/w   |
+|           2.4 | TDEN |       | Encoding time (YYYY-MM-DDTHH:MM:SS)                    |   r/w   |
+|      2.3, 2.4 | TDES |       | iTunes podcast description (nonstandard)               |   r/w   |
+| 2.2, 2.3, 2.4 | TDLY |  TDY  | Playlist delay (ms)                                    |   r/w   |
+|           2.4 | TDOR |       | Original release time (YYYY-MM-DDTHH:MM:SS)            |   r/w   |
+|           2.4 | TDRC |       | Recording time (YYYY-MM-DDTHH:MM:SS)                   |   r/w   |
+|           2.4 | TDRL |       | Release time (YYYY-MM-DDTHH:MM:SS)                     |   r/w   |
+|           2.4 | TDTG |       | Tagging time (YYYY-MM-DDTHH:MM:SS)                     |   r/w   |
+| 2.2, 2.3, 2.4 | TENC |  TEN  | Encoder                                                |   r/w   |
+| 2.2, 2.3, 2.4 | TEXT |  TXT  | Lyricist                                               |   r/w   |
+| 2.2, 2.3, 2.4 | TFLT |  TFT  | File type                                              |   r/w   |
+|      2.3, 2.4 | TGID |       | iTunes podcast identifier (nonstandard)                |   r/w   |
+| 2.2, 2.3      | TIME |       | Time of recording (HHMM)                               |   r/w   |
+|           2.4 | TIPL |       | Involved people list                                   |    r    |
+| 2.2, 2.3, 2.4 | TIT1 |  TT1  | Content group description                              |   r/w   |
+| 2.2, 2.3, 2.4 | TIT2 |  TT2  | Title                                                  |   r/w   |
+| 2.2, 2.3, 2.4 | TIT3 |  TT3  | Subtitle/description refinement                        |   r/w   |
+| 2.2, 2.3, 2.4 | TKEY |  TKE  | Starting key                                           |   r/w   |
+|      2.3, 2.4 | TKWD |       | iTunes podcast keywords (nonstandard)                  |   r/w   |
+| 2.2, 2.3, 2.4 | TLAN |  TLA  | Audio languages                                        |   r/w   |
+| 2.2, 2.3, 2.4 | TLEN |  TLE  | Audio length (ms)                                      |   r/w   |
+|           2.4 | TMCL |       | Musicians credits list                                 |    r    |
+| 2.2, 2.3, 2.4 | TMED |  TMT  | Source media type                                      |   r/w   |
+|           2.4 | TMOO |       | Mood                                                   |   r/w   |
+| 2.2, 2.3, 2.4 | TOAL |  TOT  | Original album/movie/show title                        |   r/w   |
+| 2.2, 2.3, 2.4 | TOFN |  TOF  | Original filename                                      |   r/w   |
+| 2.2, 2.3, 2.4 | TOLY |  TOL  | Original lyricist                                      |   r/w   |
+| 2.2, 2.3, 2.4 | TOPE |  TOA  | Original artist/performer                              |   r/w   |
+| 2.2, 2.3      | TORY |  TOR  | Original release year                                  |   r/w   |
+|      2.3, 2.4 | TOWN |       | Owner/Licensee                                         |   r/w   |
+| 2.2, 2.3, 2.4 | TPE1 |  TP1  | Lead artist/performer/soloist/group                    |   r/w   |
+| 2.2, 2.3, 2.4 | TPE2 |  TP2  | Band/Orchestra/Accompaniment                           |   r/w   |
+| 2.2, 2.3, 2.4 | TPE3 |  TP3  | Conductor                                              |   r/w   |
+| 2.2, 2.3, 2.4 | TPE4 |  TP4  | Interpreter/Remixer/Modifier                           |   r/w   |
+| 2.2, 2.3, 2.4 | TPOS |  TPA  | Part of set                                            |   r/w   |
+|           2.4 | TPRO |       | Produced                                               |   r/w   |
+| 2.2, 2.3, 2.4 | TPUB |  TPB  | Publisher                                              |   r/w   |
+| 2.2, 2.3, 2.4 | TRCK |  TRK  | Track number                                           |   r/w   |
+| 2.2, 2.3      | TRDA |  TRD  | Recording dates                                        |   r/w   |
+|      2.3, 2.4 | TRSN |       | Internet radio station name                            |   r/w   |
+|      2.3, 2.4 | TRSO |       | Internet radio station owner                           |   r/w   |
+| 2.2, 2.3      | TSIZ |  TSI  | Size of audio data (bytes)                             |   r/w   |
+|      2.3, 2.4 | TSO2 |       | iTunes album artist sort (nonstandard)                 |   r/w   |
+|           2.4 | TSOA |       | Album sort order key                                   |   r/w   |
+|      2.3, 2.4 | TSOC |       | iTunes composer sort (nonstandard)                     |   r/w   |
+|           2.4 | TSOP |       | Performer sort order key                               |   r/w   |
+|           2.4 | TSOT |       | Title sort order key                                   |   r/w   |
+| 2.2, 2.3, 2.4 | TSRC |  TRC  | International Standard Recording Code (ISRC)           |   r/w   |
+| 2.2, 2.3, 2.4 | TSSE |  TSS  | Encoder settings                                       |   r/w   |
+|           2.4 | TSST |       | Set subtitle                                           |   r/w   |
+| 2.2, 2.3, 2.4 | TXXX |  TXX  | User-defined text data (DESC, TEXT)                    |   r/w   |
+| 2.2, 2.3      | TYER |  TYE  | Year of recording (YYYY)                               |   r/w   |
+| 2.2, 2.3, 2.4 | UFID |  UFI  | Unique file identifier                                 |    r    |
+|      2.3, 2.4 | USER |       | Terms of use                                           |    r    |
+| 2.2, 2.3, 2.4 | USLT |  ULT  | Unsynchronised lyrics/transcription (DESC, LANG, TEXT) |   r/w   |
+| 2.2, 2.3, 2.4 | WCOM |  WCM  | Commercial information                                 |   r/w   |
+| 2.2, 2.3, 2.4 | WCOP |  WCP  | Copyright information                                  |   r/w   |
+|      2.3, 2.4 | WFED |       | iTunes podcast feed (nonstandard)                      |   r/w   |
+| 2.2, 2.3, 2.4 | WOAF |  WAF  | Official file information                              |   r/w   |
+| 2.2, 2.3, 2.4 | WOAR |  WAR  | Official artist/performer information                  |   r/w   |
+| 2.2, 2.3, 2.4 | WOAS |  WAS  | Official source information                            |   r/w   |
+|      2.3, 2.4 | WORS |       | Official internet radio information                    |   r/w   |
+|      2.3, 2.4 | WPAY |       | Payment information                                    |   r/w   |
+| 2.2, 2.3, 2.4 | WPUB |  WPB  | Official publisher information                         |   r/w   |
+| 2.2, 2.3, 2.4 | WXXX |  WXX  | User-defined URL data (DESC, URL)                      |   r/w   |
+`-------------------------------------------------------------------------------------------------`
+
+                           ID3v1                                 ID3v2.3
+                   http://id3.org/ID3v1                  http://id3.org/id3v2.3.0
+
+                          ID3v2.2                                ID3v2.4
+                  http://id3.org/id3v2-00            http://id3.org/id3v2.4.0-frames\n");
     }
 
     /// Construct a Cli object representing passed command-line arguments.
@@ -274,104 +294,74 @@ impl Cli {
                 "-0D" | "--file-sep-null" => { file_sep_null = true; },
                 "--" => { i += 1; break; },
 
-                "--COMM" => {
+                "--COMM" | "--COM" |
+                "--USLT" | "--ULT" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
-                    let comment = Comment {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
+                    let frame = Frame {
+                        id: arg[2..].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: Some(args[i + 2].clone()),
+                        content: None,
                     };
-                    actions.push(Action::Print(Frame::with_content("COMM", Content::Comment(comment))));
-                    i += 2;
-                }
-                "--USLT" => {
-                    if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after {}", args[i]));
-                    }
-                    let lyrics = Lyrics {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
-                    };
-                    actions.push(Action::Print(Frame::with_content("USLT", Content::Lyrics(lyrics))));
+                    actions.push(Action::Print(frame));
                     i += 2;
                 },
 
-                "--TXXX" => {
+                "--TXXX" | "--TXX" |
+                "--WXXX" | "--WXX" => {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
-                    let extended_text = ExtendedText {
-                        value: "".to_string(),
-                        description: args[i + 1].clone(),
+                    let frame = Frame {
+                        id: arg[2..].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: None,
+                        content: None,
                     };
-                    actions.push(Action::Print(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
-                    i += 1;
-                },
-                "--WXXX" => {
-                    if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after {}", args[i]));
-                    }
-                    let extended_link = ExtendedLink {
-                        link: "".to_string(),
-                        description: args[i + 1].clone(),
-                    };
-                    actions.push(Action::Print(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
+                    actions.push(Action::Print(frame));
                     i += 1;
                 },
 
                 // All parameterless getters
                 str if Cli::is_getter_arg(str) => {
-                    actions.push(Action::Print(Frame::text(&str[2..], "")));
+                    let frame = Frame {
+                        id: str[2..].to_string(),
+                        desc: None,
+                        lang: None,
+                        content: None,
+                    };
+                    actions.push(Action::Print(frame));
                 },
 
-                "--COMM=" => {
+                "--COMM=" | "--COM=" |
+                "--USLT=" | "--ULT=" => {
                     if i + 3 >= args.len() {
                         return Err(anyhow!("3 arguments expected after {}", args[i]));
                     }
-                    let comment = Comment {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: args[i + 3].clone(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: Some(args[i + 2].clone()),
+                        content: Some(args[i + 3].clone()),
                     };
-                    actions.push(Action::Set(Frame::with_content("COMM", Content::Comment(comment))));
-                    i += 3;
-                }
-                "--USLT=" => {
-                    if i + 3 >= args.len() {
-                        return Err(anyhow!("3 arguments expected after {}", args[i]));
-                    }
-                    let lyrics = Lyrics {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: args[i + 3].clone(),
-                    };
-                    actions.push(Action::Set(Frame::with_content("USLT", Content::Lyrics(lyrics))));
+                    actions.push(Action::Set(frame));
                     i += 3;
                 }
 
-                "--TXXX=" => {
+                "--TXXX=" | "--TXX=" |
+                "--WXXX=" | "--WXX=" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
-                    let extended_text = ExtendedText {
-                        description: args[i + 1].clone(),
-                        value: args[i + 2].clone(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: None,
+                        content: Some(args[i + 2].clone()),
                     };
-                    actions.push(Action::Set(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
-                    i += 2;
-                },
-                "--WXXX=" => {
-                    if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after {}", args[i]));
-                    }
-                    let extended_link = ExtendedLink {
-                        description: args[i + 1].clone(),
-                        link: args[i + 2].clone(),
-                    };
-                    actions.push(Action::Set(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
+                    actions.push(Action::Set(frame));
                     i += 2;
                 },
 
@@ -380,62 +370,55 @@ impl Cli {
                     if i + 1 >= args.len() {
                         return Err(anyhow!("1 argument expected after {str}"));
                     }
-                    let text = args[i + 1].clone();
-                    actions.push(Action::Set(Frame::text(&str[2..(str.len() - 1)], text)));
+                    let frame = Frame {
+                        id: str[2..(str.len() - 1)].to_string(),
+                        desc: None,
+                        lang: None,
+                        content: Some(args[i + 1].clone()),
+                    };
+                    actions.push(Action::Set(frame));
                     i += 1;
                 },
 
-                "--COMM-" => {
+                "--COMM-" | "--COM-" |
+                "--USLT-" | "--ULT-" => {
                     if i + 2 >= args.len() {
                         return Err(anyhow!("2 arguments expected after {}", args[i]));
                     }
-                    let comment = Comment {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: Some(args[i + 2].clone()),
+                        content: None,
                     };
-                    actions.push(Action::Delete(Frame::with_content("COMM", Content::Comment(comment))));
+                    actions.push(Action::Delete(frame));
                     i += 2;
                 }
-                "--USLT-" => {
-                    if i + 2 >= args.len() {
-                        return Err(anyhow!("2 arguments expected after {}", args[i]));
-                    }
-                    let lyrics = Lyrics {
-                        description: args[i + 1].clone(),
-                        lang: args[i + 2].clone(),
-                        text: "".to_string(),
-                    };
-                    actions.push(Action::Delete(Frame::with_content("USLT", Content::Lyrics(lyrics))));
-                    i += 2;
-                },
 
-                "--TXXX-" => {
+                "--TXXX-" | "--TXX-" |
+                "--WXXX-" | "--WXX-" => {
                     if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after {}", &args[i]));
+                        return Err(anyhow!("1 argument expected after {}", args[i]));
                     }
-                    let extended_text = ExtendedText {
-                        value: "".to_string(),
-                        description: args[i + 1].clone(),
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: Some(args[i + 1].clone()),
+                        lang: None,
+                        content: None,
                     };
-                    actions.push(Action::Delete(Frame::with_content("TXXX", Content::ExtendedText(extended_text))));
-                    i += 1;
-                },
-                "--WXXX-" => {
-                    if i + 1 >= args.len() {
-                        return Err(anyhow!("1 argument expected after {}", &args[i]));
-                    }
-                    let extended_link = ExtendedLink {
-                        link: "".to_string(),
-                        description: args[i + 1].clone(),
-                    };
-                    actions.push(Action::Delete(Frame::with_content("WXXX", Content::ExtendedLink(extended_link))));
+                    actions.push(Action::Delete(frame));
                     i += 1;
                 },
 
                 // All parameterless delete args
                 str if Cli::is_delete_arg(str) => {
-                    actions.push(Action::Delete(Frame::text(&str[2..(str.len() - 1)], "")));
+                    let frame = Frame {
+                        id: arg[2..(arg.len() - 1)].to_string(),
+                        desc: None,
+                        lang: None,
+                        content: None,
+                    };
+                    actions.push(Action::Delete(frame));
                 },
 
                 "--id3v2.2" => {
@@ -500,28 +483,113 @@ impl Cli {
 
     /// Checks if a command-line argument is a getter argument.
     fn is_getter_arg(arg: &str) -> bool {
-        arg.len() == 6 && arg.starts_with("--") && (arg[2..]).chars()
+        (arg.len() == 6 || arg.len() == 5) && arg.starts_with("--") && (arg[2..]).chars()
             .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 
     /// Checks if a command-line argument is a setter argument.
     fn is_setter_arg(arg: &str) -> bool {
-        arg.len() == 7 && arg.starts_with("--") && arg.ends_with('=')
-        && (matches!(&arg[2..(arg.len() - 1)],
-            "COMM" | "TALB" | "TBPM" | "TCAT" | "TCMP" | "TCOM" | "TCON" | "TCOP" |
-            "TDAT" | "TDEN" | "TDES" | "TDLY" | "TDOR" | "TDRC" | "TDRL" | "TDTG" |
-            "TENC" | "TEXT" | "TFLT" | "TGID" | "TIME" | "TIPL" | "TIT1" | "TIT2" |
-            "TIT3" | "TKEY" | "TKWD" | "TLAN" | "TLEN" | "TMCL" | "TMED" | "TMOO" |
-            "TOAL" | "TOFN" | "TOLY" | "TOPE" | "TORY" | "TOWN" | "TPE1" | "TPE2" |
-            "TPE3" | "TPE4" | "TPOS" | "TPRO" | "TPUB" | "TRCK" | "TRDA" | "TRSN" |
-            "TRSO" | "TSIZ" | "TSO2" | "TSOA" | "TSOC" | "TSOP" | "TSOT" | "TSRC" |
-            "TSSE" | "TSST" | "TXXX" | "TYER" | "USLT" | "WCOM" | "WCOP" | "WFED" |
-            "WOAF" | "WOAR" | "WOAS" | "WORS" | "WPAY" | "WPUB" | "WXXX")
+        (arg.len() == 7 || arg.len() == 6) && arg.starts_with("--") && arg.ends_with('=')
+        && (arg[2..(arg.len() - 1)]).chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
     }
 
     /// Checks if a command-line argument is a delete argument.
     fn is_delete_arg(arg: &str) -> bool {
-        arg.len() == 7 && arg.starts_with("--") && arg.ends_with('-')
+        (arg.len() == 7 || arg.len() == 6) && arg.starts_with("--") && arg.ends_with('-')
         && (arg[2..(arg.len() - 1)]).chars() .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+    }
+}
+
+impl Frame {
+    /// Converts a Cli::Frame to an id3::Frame. This is a one-way conversion, because id3::Frame
+    /// does not retain information about whether a frame was ID3v2.2 or ID3v2.3+. In particular,
+    /// the 3-letter frame ID of ID3v2.2 gets converted to a 4-letter ID of ID3v2.3.
+    pub fn to_id3_frame(&self) -> id3::Frame {
+        match self.id.as_str() {
+            "COMM" | "COM" => {
+                let comment = Comment {
+                    description: self.desc.clone().unwrap(),
+                    lang: self.lang.clone().unwrap(),
+                    text: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::Comment(comment))
+            },
+
+            "USLT" | "ULT" => {
+                let lyrics = Lyrics {
+                    description: self.desc.clone().unwrap(),
+                    lang: self.lang.clone().unwrap(),
+                    text: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::Lyrics(lyrics))
+            },
+
+            "TXXX" | "TXX" => {
+                let extended_text = ExtendedText {
+                    description: self.desc.clone().unwrap(),
+                    value: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::ExtendedText(extended_text))
+            },
+
+            "WXXX" | "WXX" => {
+                let extended_link = ExtendedLink {
+                    description: self.desc.clone().unwrap(),
+                    link: self.content.clone().unwrap_or_default(),
+                };
+                id3::Frame::with_content(self.id.clone(), Content::ExtendedLink(extended_link))
+            },
+
+            // "W000" - "WZZZ" and "W00" - "WZZ" link frames
+            x if x.starts_with('W') => {
+                let link = self.content.clone().unwrap_or_default();
+                id3::Frame::with_content(self.id.clone(), Content::Link(link))
+            },
+
+            _ => id3::Frame::text(self.id.clone(), self.content.clone().unwrap_or_default()),
+        }
+    }
+}
+
+impl Action {
+    // Returns `Ok(())` if the action is supported by rsid3, or an `Err()` reason why not.
+    pub fn is_supported(&self, tag: &Tag) -> Result<()> {
+        match self {
+            Self::Set(frame) => {
+                let id = &frame.id;
+
+                // Enforcing correct length makes it easier to support custom T00-TZZ/T000-TZZZ
+                // frames etc., even though technically we could automatically convert the standard
+                // frames between their 3 and 4 -character variants.
+                if tag.version() == Version::Id3v22 && id.len() != 3 {
+                    return Err(anyhow!("Please use 3-character frame IDs for ID3v2.2 tags"))
+                }
+                if id.len() != 4 && (tag.version() == Version::Id3v23 || tag.version() == Version::Id3v24) {
+                    return Err(anyhow!("Please use 4-character frame IDs for ID3v2.3 and ID3v2.4 tags"))
+                }
+
+                // Text frames names "T00" - "TZZ" or "T000" - "TZZZ", including "TXX" and "TXXX",
+                // but excluding TIPL/TMCL, because I do not understand their encoding.
+                if id.starts_with('T')
+                    && id.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+                    && !matches!(id.as_str(), "TIPL" | "TMCL") {
+                    return Ok(())
+                }
+
+                // URL frames names "W00" - "WZZ" or "W000" - "WZZZ", including "WXX" and "WXXX".
+                if id.starts_with('W')
+                    && id.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit()) {
+                    return Ok(())
+                }
+
+                // These are supported as well
+                if matches!(id.as_str(), "COMM" | "USLT" | "COM" | "ULT") {
+                    return Ok(())
+                }
+
+                Err(anyhow!("Writing the {id} frame is not supported, try 'rsid3 --list-frames'"))
+            },
+            _ => Ok(())
+        }
     }
 }

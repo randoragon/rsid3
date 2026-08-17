@@ -182,32 +182,36 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) 
 }
 
 /// Pretty-prints a single frame's name and contents.
-pub fn print_frame_pretty(frame: &Frame) -> Result<()> {
+pub fn print_frame_pretty(frame: &Frame, version: Version) -> Result<()> {
+    let id = match frame.id_for_version(version) {
+        Some(x) => x,
+        _ => return Err(anyhow!("Cannot obtain ID for the specified version")),
+    };
     match frame.id() {
         "TXXX" => {
             let extended_text = get_content_txxx(frame)?;
-            println!("{}[{}]: {}", frame.id(), extended_text.description, extended_text.value);
+            println!("{}[{}]: {}", id, extended_text.description, extended_text.value);
         },
         "WXXX" => {
             let extended_link = get_content_wxxx(frame)?;
-            println!("{}[{}]: {}", frame.id(), extended_link.description, extended_link.link);
+            println!("{}[{}]: {}", id, extended_link.description, extended_link.link);
         },
         "COMM" => {
             let comment = get_content_comm(frame)?;
-            println!("{}[{}]({}): {}", frame.id(), comment.description, comment.lang, comment.text);
+            println!("{}[{}]({}): {}", id, comment.description, comment.lang, comment.text);
         },
         "USLT" => {
             let lyrics = get_content_uslt(frame)?;
-            println!("{}[{}]({}): {}", frame.id(), lyrics.description, lyrics.lang, lyrics.text);
+            println!("{}[{}]({}): {}", id, lyrics.description, lyrics.lang, lyrics.text);
         },
         str if str.starts_with('T') && str != "TIPL" => {
-            println!("{}: {}", frame.id(), get_content_text(frame)?);
+            println!("{}: {}", id, get_content_text(frame)?);
         },
         str if str.starts_with('W') => {
-            println!("{}: {}", frame.id(), get_content_link(frame)?);
+            println!("{}: {}", id, get_content_link(frame)?);
         },
         _ => {
-            println!("{}: {}", frame.id(), frame.content());
+            println!("{}: {}", id, frame.content());
         },
     }
     Ok(())
