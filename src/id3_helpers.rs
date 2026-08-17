@@ -88,7 +88,7 @@ pub fn frame_to_string(frame: &Frame) -> Result<String, anyhow::Error> {
 /// Attempts to find a tag frame matching a query and prints its contents as text.
 /// `fpath` is only used for message prints.
 /// Returns whether a frame was found and printed.
-pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<()> {
+pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
     match frame.id() {
         "TXXX" => {
             let desc_query = &get_content_txxx(frame)?.description;
@@ -103,7 +103,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) 
                 };
                 if extended_text.description == *desc_query {
                     print!("{}", extended_text.value);
-                    return Ok(());
+                    return Ok(true);
                 }
             }
         },
@@ -119,7 +119,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) 
                 };
                 if extended_link.description == *desc_query {
                     print!("{}", extended_link.link);
-                    return Ok(());
+                    return Ok(true);
                 }
             }
         },
@@ -136,7 +136,7 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) 
                 };
                 if comment.description == *desc_query && (comment.lang == *lang_query || *lang_query == "first") {
                     print!("{}", comment.text);
-                    return Ok(());
+                    return Ok(true);
                 }
             }
         },
@@ -153,32 +153,32 @@ pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) 
                 };
                 if lyrics.description == *desc_query && (lyrics.lang == *lang_query || *lang_query == "first") {
                     print!("{}", lyrics.text);
-                    return Ok(());
+                    return Ok(true);
                 }
             }
         },
         x if x.starts_with('T') && x != "TIPL" => {
             if let Some(frame) = tag.get(x) {
                 print!("{}", get_content_text(frame)?);
-                return Ok(());
+                return Ok(true);
             }
         },
         x if x.starts_with('W') => {
             if let Some(frame) = tag.get(x) {
                 print!("{}", get_content_link(frame)?);
-                return Ok(());
+                return Ok(true);
             }
         },
         x => {
             if let Some(frame) = tag.get(x) {
                 print!("{}", frame.content());
-                return Ok(());
+                return Ok(true);
             }
         },
     }
     // Frame not found
     eprintln!("{}: Could not print {}: Frame not found", fpath.as_ref().display(), frame_to_string(frame)?);
-    Ok(())
+    Ok(false)
 }
 
 /// Pretty-prints a single frame's name and contents.

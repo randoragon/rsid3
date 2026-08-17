@@ -28,6 +28,11 @@ enum ExitCode {
     /// Process finished successfully.
     Success = 0,
 
+    /// Attempted read of a frame that does not exist in a file. This exit code is important,
+    /// because it allows to determine that a frame does not exist, as opposed to it containing
+    /// an empty string.
+    FrameNotFound = 1,
+
     /// The user passed incorrect arguments.
     BadArg = 255,
 
@@ -132,6 +137,8 @@ fn main() -> ExitCode {
     // Handle all actions
     if !cli.actions.is_empty() {
         let mut is_first_file_print = true;
+        let mut was_any_needed_frame_missing = false;
+
         for fpath in &cli.files {
             // Read the file's tag
             let mut tag = match Tag::read_from_path(fpath) {
@@ -165,9 +172,16 @@ fn main() -> ExitCode {
                                 is_first_file_print = false;
                             }
                         }
-                        if let Err(e) = print_tag_frame_query(&tag, &frame.to_id3_frame(), fpath) {
-                            eprintln!("rsid3: {e}");
-                            return ExitCode::ActionFailed;
+                        match print_tag_frame_query(&tag, &frame.to_id3_frame(), fpath) {
+                            Ok(found) => {
+                                if !found {
+                                    was_any_needed_frame_missing = true;
+                                }
+                            },
+                            Err(e) => {
+                                eprintln!("rsid3: {e}");
+                                return ExitCode::ActionFailed;
+                            },
                         }
                     },
                     Action::Set(frame) => {
@@ -176,8 +190,11 @@ fn main() -> ExitCode {
                     },
                     Action::Delete(frame) => {
                         match delete_tag_frame(&mut tag, &frame.to_id3_frame(), fpath) {
-                            Ok(modified) => {
-                                tag_was_modified |= modified;
+                            Ok(found) => {
+                                tag_was_modified |= found;
+                                if !found {
+                                    was_any_needed_frame_missing = true;
+                                }
                             },
                             Err(e) => {
                                 eprintln!("rsid3: {e}");
@@ -224,6 +241,10 @@ fn main() -> ExitCode {
                     return ExitCode::ActionFailed;
                 }
             }
+        }
+
+        if was_any_needed_frame_missing {
+            return ExitCode::FrameNotFound;
         }
     } else /* if cli.actions.is_empty() */ {
         if cli.files.is_empty() {
