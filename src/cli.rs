@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License along
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+use crate::ExitCode;
 use std::env::args;
 use anyhow::{anyhow, Result};
 use id3::{Content, Tag, Version};
@@ -77,8 +78,7 @@ impl Cli {
     pub fn print_usage() {
         println!("Usage:  rsid3 [OPTION] [--] FILE...");
         println!();
-        println!("Reads or writes ID3v2 tags in mp3 files.");
-        println!("Supported standards: ID3v2.2, ID3v2.3, ID3v2.4.");
+        println!("Reads or writes ID3v2 tags in mp3 files. Supports ID3v2.2, ID3v2.3, ID3v2.4.");
         println!();
         println!("Options:");
         println!("  -h, --help               Show this help and exit.");
@@ -110,16 +110,25 @@ impl Cli {
         println!("  --purge-id3v2.4          Purge ID3v2.4 tags, if present.");
         println!("  --purge-all              Purge all ID3v2 tags, if present.");
         println!();
-        println!("If the value of LANG is irrelevant when printing a frame, 'first'");
-        println!("can be passed instead, in which case the first frame with a matching");
-        println!("DESC is printed.");
+        println!("Exit Codes:");
+        println!("{:3}  Command finished successfully", ExitCode::Success as u8);
+        println!("{:3}  Success, but at least one frame was missing (see explanation in (4))", ExitCode::FrameNotFound as u8);
+        println!("{:3}  Invalid arguments", ExitCode::BadArg as u8);
+        println!("{:3}  Failed to execute a specified action", ExitCode::ActionFailed as u8);
         println!();
-        println!("If no print/set/delete/convert/purge options are passed, all frames are printed.");
-        println!("Any number of print/set/delete/convert/purge options can be passed in any order.");
-        println!("The options are executed in the same order as they were passed in. This allows");
-        println!("for chaining many operations under a single command.");
-        println!("If no convert options are passed, rsid3 keeps the existing tag versions,");
-        println!("or defaults to ID3v2.4 when creating new tags from scratch.");
+        println!("(1) If no print/set/delete/convert/purge options are passed, all frames are printed.");
+        println!("(2) Any number of print/set/delete/convert/purge options can be passed in any order. The options are");
+        println!("    executed in the same order as they were passed in. This allows for chaining many operations with");
+        println!("    a single command.");
+        println!("(3) If no convert options are passed, rsid3 keeps the existing tag versions, or defaults to ID3v2.4");
+        println!("    when creating new tags from scratch.");
+        println!("(4) The exit code {} exists to communicate that a frame was missing. This exit code can only appear", ExitCode::FrameNotFound as u8);
+        println!("    when using print and delete actions. For example, 'rsid3 --TIT2- file.mp3' shall exit with {} iff", ExitCode::Success as u8);
+        println!("    TIT2 got deleted and with {} iff it was already absent from file.mp3. With print actions, the", ExitCode::FrameNotFound as u8);
+        println!("    behavior is the same and it is the only way to tell apart a missing frame from an empty string.");
+        println!("    If multiple frames or files are concerned, the value is {} iff all of them existed in all files.", ExitCode::Success as u8);
+        println!("(5) If the value of LANG is irrelevant when printing a frame, \"first\" can be passed instead, in");
+        println!("    which case the first frame with a matching DESC is printed.");
     }
 
     /// Prints the current version of rsid3.
