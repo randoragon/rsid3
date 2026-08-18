@@ -182,16 +182,26 @@ fn main() -> ExitCode {
 
         // Print all frames if no options supplied
         let mut is_first = true;
+        let mut any_tag_was_missing = false;
         for fpath in &cli.files {
             if is_first {
                 is_first = false;
             } else {
                 println!();
             }
-            if let Err(e) = print_all_file_frames_pretty(fpath) {
-                eprintln!("rsid3: {e}");
-                return ExitCode::ActionFailed;
+            match print_all_file_frames_pretty(fpath) {
+                Ok(found) => {
+                    any_tag_was_missing |= !found;
+                },
+                Err(e) => {
+                    eprintln!("rsid3: {e}");
+                    return ExitCode::ActionFailed;
+                },
             }
+        }
+
+        if any_tag_was_missing {
+            return ExitCode::TagNotFound;
         }
     }
 

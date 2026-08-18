@@ -32,6 +32,9 @@ pub enum ExitCode {
     /// an empty string.
     FrameNotFound = 1,
 
+    /// Attempted reading a tag on a file that has no tag.
+    TagNotFound = 2,
+
     /// The user passed incorrect arguments.
     BadArg = 255,
 
@@ -48,13 +51,14 @@ impl std::process::Termination for ExitCode {
 }
 
 /// Pretty-prints all supported frames stored in the file.
-pub fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
+/// On success, returns whether the file contained a tag.
+pub fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<bool> {
     let tag = match Tag::read_from_path(fpath) {
         Ok(tag) => tag,
         Err(e) => match e.kind {
             id3::ErrorKind::NoTag => {
-                eprintln!("{}: No tag found", fpath.as_ref().display());
-                return Ok(());
+                println!("{}: No tag found", fpath.as_ref().display());
+                return Ok(false);
             },
             _ => return Err(anyhow!("Failed to read tag from file '{}': {e}", fpath.as_ref().display())),
         }
@@ -67,7 +71,7 @@ pub fn print_all_file_frames_pretty(fpath: &impl AsRef<Path>) -> Result<()> {
         print_frame_pretty(frame, tag.version())?;
     }
 
-    Ok(())
+    Ok(true)
 }
 
 /// Converts a tag according to the given command-line option.

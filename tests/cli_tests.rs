@@ -67,8 +67,8 @@ fn prints_supported_frames() {
 fn prints_no_tag() {
     let file = TestFile::empty();
     let output = rsid3_run(&[file.path()]);
-    assert!(output.status.success());
-    assert_eq!(output.stderr, [
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert_eq!(output.stdout, [
         file.path().as_os_str().as_encoded_bytes(),
         b": No tag found\n",
     ].concat());
@@ -131,8 +131,10 @@ fn prints_all_frames() {
 fn prints_all_frames_multiple_files() {
     let file1 = TestFile::tit2();
     let file2 = TestFile::txxx();
+    let file3 = TestFile::empty();
     let fpath1 = file1.path().as_os_str();
     let fpath2 = file2.path().as_os_str();
+    let fpath3 = file3.path().as_os_str();
 
     let output = rsid3_run(&[fpath1, fpath2]);
     assert!(output.status.success());
@@ -150,6 +152,15 @@ fn prints_all_frames_multiple_files() {
         b"TXXX[Description]: Sample Content\n\n",
         fpath1.as_encoded_bytes(), b": ID3v2.4, 1 frame:\n",
         b"TIT2: Sample Title\n",
+    ].concat());
+
+    let output = rsid3_run(&[fpath1, fpath3]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert_eq!(output.stdout, [
+        fpath1.as_encoded_bytes(), b": ID3v2.4, 1 frame:\n",
+        b"TIT2: Sample Title\n\n",
+        fpath3.as_encoded_bytes(),
+        b": No tag found\n",
     ].concat());
 }
 

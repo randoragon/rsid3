@@ -112,7 +112,8 @@ impl Cli {
         println!();
         println!("Exit Codes:");
         println!("{:3}  Command finished successfully", ExitCode::Success as u8);
-        println!("{:3}  Success, but at least one frame was missing (see explanation in (4))", ExitCode::FrameNotFound as u8);
+        println!("{:3}  Success, but at least one frame was missing (see explanation in (5))", ExitCode::FrameNotFound as u8);
+        println!("{:3}  Success, but at least one file did not have a tag (see explanation in (6))", ExitCode::TagNotFound as u8);
         println!("{:3}  Invalid arguments", ExitCode::BadArg as u8);
         println!("{:3}  Failed to execute a specified action", ExitCode::ActionFailed as u8);
         println!();
@@ -122,13 +123,15 @@ impl Cli {
         println!("    a single command.");
         println!("(3) If no convert options are passed, rsid3 keeps the existing tag versions, or defaults to ID3v2.4");
         println!("    when creating new tags from scratch.");
-        println!("(4) The exit code {} exists to communicate that a frame was missing. This exit code can only appear", ExitCode::FrameNotFound as u8);
+        println!("(4) If the value of LANG is irrelevant when printing a frame, \"first\" can be passed instead, in");
+        println!("    which case the first frame with a matching DESC is printed.");
+        println!("(5) The exit code {} exists to communicate that a frame was missing. This exit code can only appear", ExitCode::FrameNotFound as u8);
         println!("    when using print and delete actions. For example, 'rsid3 --TIT2- file.mp3' shall exit with {} iff", ExitCode::Success as u8);
         println!("    TIT2 got deleted and with {} iff it was already absent from file.mp3. With print actions, the", ExitCode::FrameNotFound as u8);
         println!("    behavior is the same and it is the only way to tell apart a missing frame from an empty string.");
         println!("    If multiple frames or files are concerned, the value is {} iff all of them existed in all files.", ExitCode::Success as u8);
-        println!("(5) If the value of LANG is irrelevant when printing a frame, \"first\" can be passed instead, in");
-        println!("    which case the first frame with a matching DESC is printed.");
+        println!("(6) The exit code {} can only appear when invoking the command with no print/set/delete/convert/purge", ExitCode::TagNotFound as u8);
+        println!("    options, as explained in (1). It appears iff at least one of the files had no tag to print.");
     }
 
     /// Prints the current version of rsid3.
