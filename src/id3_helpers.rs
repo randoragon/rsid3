@@ -14,7 +14,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 use anyhow::{anyhow, Result};
-use id3::{Tag, TagLike, Frame, Version};
+use id3::{Tag, TagLike, Frame, Version, Content};
 use id3::frame::{Comment, Lyrics, ExtendedText, ExtendedLink};
 use std::io::empty;
 use std::path::Path;
@@ -88,96 +88,43 @@ pub fn frame_to_string(frame: &Frame) -> Result<String, anyhow::Error> {
 /// Attempts to find a tag frame matching a query and prints its contents as text.
 /// `fpath` is only used for message prints.
 /// Returns whether a frame was found and printed.
-pub fn print_tag_frame_query(tag: &Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
-    match frame.id() {
-        "TXXX" => {
-            let desc_query = &get_content_txxx(frame)?.description;
-
-            for txxx in tag.frames().filter(|&f| f.id() == "TXXX") {
-                let extended_text = match get_content_txxx(txxx) {
-                    Ok(x) => x,
-                    Err(e) => {
-                        eprintln!("rsid3: {e}");
-                        continue;
-                    },
-                };
-                if extended_text.description == *desc_query {
-                    print!("{}", extended_text.value);
+pub fn print_tag_frame_query(tag: &Tag, query: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
+    for frame in tag.frames() {
+        if frame_matches_query(frame, query)? {
+            match query.id() {
+                "TXXX" => {
+                    print!("{}", &get_content_txxx(frame)?.value);
                     return Ok(true);
-                }
-            }
-        },
-        "WXXX" => {
-            let desc_query = &get_content_wxxx(frame)?.description;
-            for wxxx in tag.frames().filter(|&f| f.id() == "WXXX") {
-                let extended_link = match get_content_wxxx(wxxx) {
-                    Ok(x) => x,
-                    Err(e) => {
-                        eprintln!("rsid3: {e}");
-                        continue;
-                    },
-                };
-                if extended_link.description == *desc_query {
-                    print!("{}", extended_link.link);
+                },
+                "WXXX" => {
+                    print!("{}", &get_content_wxxx(frame)?.link);
                     return Ok(true);
-                }
-            }
-        },
-        "COMM" => {
-            let comment_query = get_content_comm(frame)?;
-            let (desc_query, lang_query) = (&comment_query.description, &comment_query.lang);
-            for comm in tag.frames().filter(|&f| f.id() == "COMM") {
-                let comment = match get_content_comm(comm) {
-                    Ok(x) => x,
-                    Err(e) => {
-                        eprintln!("rsid3: {e}");
-                        continue;
-                    },
-                };
-                if comment.description == *desc_query && (comment.lang == *lang_query || *lang_query == "first") {
-                    print!("{}", comment.text);
+                },
+                "COMM" => {
+                    print!("{}", &get_content_comm(frame)?.text);
                     return Ok(true);
-                }
-            }
-        },
-        "USLT" => {
-            let lyrics_query = get_content_uslt(frame)?;
-            let (desc_query, lang_query) = (&lyrics_query.description, &lyrics_query.lang);
-            for uslt in tag.frames().filter(|&f| f.id() == "USLT") {
-                let lyrics = match get_content_uslt(uslt) {
-                    Ok(x) => x,
-                    Err(e) => {
-                        eprintln!("rsid3: {e}");
-                        continue;
-                    },
-                };
-                if lyrics.description == *desc_query && (lyrics.lang == *lang_query || *lang_query == "first") {
-                    print!("{}", lyrics.text);
+                },
+                "USLT" => {
+                    print!("{}", &get_content_uslt(frame)?.text);
                     return Ok(true);
-                }
+                },
+                x if x.starts_with('T') && x != "TIPL" => {
+                    print!("{}", get_content_text(frame)?);
+                    return Ok(true);
+                },
+                x if x.starts_with('W') => {
+                    print!("{}", get_content_link(frame)?);
+                    return Ok(true);
+                },
+                _ => {
+                    print!("{}", frame.content());
+                    return Ok(true);
+                },
             }
-        },
-        x if x.starts_with('T') && x != "TIPL" => {
-            if let Some(frame) = tag.get(x) {
-                print!("{}", get_content_text(frame)?);
-                return Ok(true);
-            }
-        },
-        x if x.starts_with('W') => {
-            if let Some(frame) = tag.get(x) {
-                print!("{}", get_content_link(frame)?);
-                return Ok(true);
-            }
-        },
-        x => {
-            if let Some(frame) = tag.get(x) {
-                print!("{}", frame.content());
-                return Ok(true);
-            }
-        },
+        }
     }
     // Frame not found
-    eprintln!("{}: Could not print {}: Frame not found", fpath.as_ref().display(), frame_to_string(frame)?);
+    eprintln!("{}: Could not print {}: Frame not found", fpath.as_ref().display(), frame_to_string(query)?);
     Ok(false)
 }
 
@@ -217,23 +164,87 @@ pub fn print_frame_pretty(frame: &Frame, version: Version) -> Result<()> {
     Ok(())
 }
 
+/// Sets a frame in a tag.
+/// Responds correctly to lang set to "first" in frames that support it.
+pub fn set_tag_frame(tag: &mut Tag, mut frame: Frame, fpath: impl AsRef<Path>) -> Result<()> {
+    let overwrite_first = match frame.id() {
+        "COMM" => get_content_comm(&frame)?.lang == "first",
+        "USLT" => get_content_uslt(&frame)?.lang == "first",
+        _ => false,
+    };
+    if overwrite_first {
+        // Ensure a matching frame exists -- if not, abort
+        let mut found = false;
+        for tag_frame in tag.frames() {
+            if frame_matches_query(tag_frame, &frame)? {
+                // Create identical copies of frame, but with LANG updated to the found value.
+                // This is a bit ugly, but it's the easiest and simplest way to do this.
+                frame = match tag_frame.id() {
+                    "COMM" => {
+                        let found_content = get_content_comm(&tag_frame)?;
+                        let new_content = get_content_comm(&frame)?;
+                        assert!(found_content.description == new_content.description);
+                        let comment = Comment {
+                            description: found_content.description.clone(),
+                            lang: found_content.lang.clone(),
+                            text: new_content.text.clone(),
+                        };
+                        Frame::with_content("COMM", Content::Comment(comment))
+                    },
+                    "USLT" => {
+                        let found_content = get_content_uslt(&tag_frame)?;
+                        let new_content = get_content_uslt(&frame)?;
+                        assert!(found_content.description == new_content.description);
+                        let lyrics = Lyrics {
+                            description: found_content.description.clone(),
+                            lang: found_content.lang.clone(),
+                            text: new_content.text.clone(),
+                        };
+                        Frame::with_content("USLT", Content::Lyrics(lyrics))
+                    },
+                    _ => panic!("internal logic error for {frame:?} and {tag_frame:?}"),
+                };
+                found = true;
+                break;
+            }
+        }
+        if !found {
+            eprintln!("{}: Could not set {}: LANG set to \"first\", yet no matching frame exists", fpath.as_ref().display(), frame_to_string(&frame)?);
+            return Ok(())
+        }
+    }
+
+    let _ = tag.add_frame(frame);
+    Ok(())
+}
+
 /// Deletes a frame matching a query from a tag.
 /// `fpath` is only used for message prints.
 /// Returns whether the frame was found and deleted.
-pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
+pub fn delete_tag_frame(tag: &mut Tag, query: &Frame, fpath: impl AsRef<Path>) -> Result<bool> {
     let mut found = false;
 
+    let only_remove_first_match = match query.id() {
+        "COMM" => get_content_comm(query)?.lang == "first",
+        "USLT" => get_content_uslt(query)?.lang == "first",
+        _ => false,
+    };
+    let mut ignore_remaining_matches = false;
+
     // Not the most efficient approach, but the id3 crate does not seem to provide a nicer way
-    for removed_frame in tag.remove(frame.id()) {
-        if frames_query_equal(frame, &removed_frame)? {
+    for removed_frame in tag.remove(query.id()) {
+        if !ignore_remaining_matches && frame_matches_query(&removed_frame, query)? {
             // Remove this frame (i.e. don't add it back)
-            found = true
+            found = true;
+            if only_remove_first_match {
+                ignore_remaining_matches = true;
+            }
         } else {
             tag.add_frame(removed_frame);
         }
     }
     if !found {
-        eprintln!("{}: Could not delete {}: Frame not found", fpath.as_ref().display(), frame_to_string(frame)?);
+        eprintln!("{}: Could not delete {}: Frame not found", fpath.as_ref().display(), frame_to_string(query)?);
     }
     Ok(found)
 }
@@ -241,37 +252,38 @@ pub fn delete_tag_frame(tag: &mut Tag, frame: &Frame, fpath: impl AsRef<Path>) -
 /// Returns whether two frames are identical except for the relevant content component.
 /// E.g. two text types are equal iff their IDs match, but two COMMs are equal iff
 /// their IDs, descriptions and languages match.
-pub fn frames_query_equal(frame1: &Frame, frame2: &Frame) -> Result<bool, anyhow::Error> {
-    if frame1.id() != frame2.id() {
+pub fn frame_matches_query(frame: &Frame, query: &Frame) -> Result<bool, anyhow::Error> {
+    if frame.id() != query.id() {
         return Ok(false);
     }
-    match frame1.id() {
+    match frame.id() {
         "TXXX" => {
-            let extended_text1 = get_content_txxx(frame1)?;
-            let extended_text2 = get_content_txxx(frame2)?;
-            if extended_text1.description != extended_text2.description {
+            let extended_text_f = get_content_txxx(frame)?;
+            let extended_text_q = get_content_txxx(query)?;
+            if extended_text_f.description != extended_text_q.description {
                 return Ok(false);
             }
         },
         "WXXX" => {
-            let extended_link1 = get_content_wxxx(frame1)?;
-            let extended_link2 = get_content_wxxx(frame2)?;
-            if extended_link1.description != extended_link2.description {
+            let extended_link_f = get_content_wxxx(frame)?;
+            let extended_link_q = get_content_wxxx(query)?;
+            if extended_link_f.description != extended_link_q.description {
                 return Ok(false);
             }
         },
 
         "COMM" => {
-            let comment1 = get_content_comm(frame1)?;
-            let comment2 = get_content_comm(frame2)?;
-            if comment1.description != comment2.description || comment1.lang != comment2.lang {
+            let comment_f = get_content_comm(frame)?;
+            let comment_q = get_content_comm(query)?;
+            if comment_f.description != comment_q.description || (comment_f.lang != comment_q.lang && comment_q.lang != "first") {
                 return Ok(false);
             }
         },
         "USLT" => {
-            let lyrics1 = get_content_uslt(frame1)?;
-            let lyrics2 = get_content_uslt(frame2)?;
-            if lyrics1.description != lyrics2.description || lyrics1.lang != lyrics2.lang {
+            let lyrics_f = get_content_uslt(frame)?;
+            let lyrics_q = get_content_uslt(query)?;
+            println!("comment_q.lang = {}", lyrics_q.lang);
+            if lyrics_f.description != lyrics_q.description || (lyrics_f.lang != lyrics_q.lang && lyrics_q.lang != "first") {
                 return Ok(false);
             }
         },

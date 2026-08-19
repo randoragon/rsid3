@@ -113,7 +113,10 @@ fn main() -> ExitCode {
                         }
                     },
                     Action::Set(frame) => {
-                        let _ = tag.add_frame(frame.to_id3_frame());
+                        if let Err(e) = set_tag_frame(&mut tag, frame.to_id3_frame(), fpath) {
+                            eprintln!("rsid3: {e}");
+                            return ExitCode::ActionFailed;
+                        }
                         tag_was_modified = true;
                     },
                     Action::Delete(frame) => {

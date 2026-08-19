@@ -123,8 +123,9 @@ impl Cli {
         println!("    a single command.");
         println!("(3) If no convert options are passed, rsid3 keeps the existing tag versions, or defaults to ID3v2.4");
         println!("    when creating new tags from scratch.");
-        println!("(4) If the value of LANG is irrelevant when printing a frame, \"first\" can be passed instead, in");
-        println!("    which case the first frame with a matching DESC is printed.");
+        println!("(4) If the value of LANG is irrelevant, \"first\" can be passed instead, in which case the first");
+        println!("    frame with a matching DESC is targeted. Setting a non-existent \"first\" frame does nothing.");
+        println!("    Note that modifying the tag may change the order of the frames and affect what is \"first\".");
         println!("(5) The exit code {} exists to communicate that a frame was missing. This exit code can only appear", ExitCode::FrameNotFound as u8);
         println!("    when using print and delete actions. For example, 'rsid3 --TIT2- file.mp3' shall exit with {} iff", ExitCode::Success as u8);
         println!("    TIT2 got deleted and with {} iff it was already absent from file.mp3. With print actions, the", ExitCode::FrameNotFound as u8);

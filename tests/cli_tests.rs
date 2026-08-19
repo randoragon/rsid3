@@ -294,6 +294,32 @@ fn prints_multiple_frames_multiple_files_with_delimiters() {
 }
 
 #[test]
+fn prints_first_lang_frame() {
+    let file = TestFile::comm();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("first"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Content");
+
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("Description"), OsStr::new("pol"), OsStr::new("Przykladowa Zawartosc"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("first"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Content");
+
+    let output = rsid3_run(&[OsStr::new("--COMM-"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("first"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Przykladowa Zawartosc");
+}
+
+#[test]
 fn sets_text_frame() {
     let file = TestFile::empty();
     let fpath = file.path().as_os_str();
@@ -330,6 +356,32 @@ fn sets_comm_frame() {
     let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("desc"), OsStr::new("eng"), fpath]);
     assert!(output.status.success());
     assert_eq!(output.stdout, b"content");
+}
+
+#[test]
+fn sets_first_lang_frame() {
+    let file = TestFile::comm();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("Description"), OsStr::new("first"), OsStr::new("New Content 1"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"New Content 1");
+
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("Description"), OsStr::new("pol"), OsStr::new("Przykladowa Zawartosc"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("Description"), OsStr::new("first"), OsStr::new("New Content 2"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"New Content 2");
 }
 
 #[test]
@@ -384,6 +436,40 @@ fn deletes_comm_frame() {
     let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
     assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
     assert!(output.stdout.is_empty());
+}
+
+#[test]
+fn deletes_first_lang_frame() {
+    let file = TestFile::comm();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--COMM-"), OsStr::new("Description"), OsStr::new("first"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("Description"), OsStr::new("eng"), OsStr::new("Sample Content"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM="), OsStr::new("Description"), OsStr::new("pol"), OsStr::new("Przykladowa Zawartosc"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM-"), OsStr::new("Description"), OsStr::new("first"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("eng"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--COMM"), OsStr::new("Description"), OsStr::new("pol"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Przykladowa Zawartosc");
 }
 
 #[test]
