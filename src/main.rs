@@ -16,7 +16,7 @@
 use rsid3::*;
 use rsid3::id3_helpers::*;
 use rsid3::cli::{Cli, Action, PurgeOpt};
-use id3::{Tag, TagLike, Version};
+use id3::{Tag, Version};
 
 fn main() -> ExitCode {
     let cli = match Cli::parse_args() {
