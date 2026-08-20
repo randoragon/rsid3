@@ -26,6 +26,7 @@
           inputsFrom = [ (rsid3 pkgsFor.${system}) ];
           buildInputs = with pkgsFor.${system}; [
             clippy
+            gnumake
           ];
         };
       });
