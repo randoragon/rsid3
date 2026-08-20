@@ -521,6 +521,45 @@ fn converts_between_tag_versions_lossless() {
     let output = rsid3_run(&[OsStr::new("--TT2"), fpath]);
     assert!(output.status.success());
     assert_eq!(output.stdout, b"Sample Title");
+
+}
+
+#[test]
+fn converts_between_tag_versions_forced() {
+    let file = TestFile::id3v2_2();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--TT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let output = rsid3_run(&[OsStr::new("--force-id3v2.4"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let output = rsid3_run(&[OsStr::new("--TMOO="), OsStr::new("Sample Mood"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--force-id3v2.2"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--force-id3v2.4"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let output = rsid3_run(&[OsStr::new("--TMOO"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::FrameNotFound as i32);
+    assert!(output.stdout.is_empty());
 }
 
 #[test]
