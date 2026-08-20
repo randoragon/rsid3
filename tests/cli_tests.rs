@@ -522,3 +522,118 @@ fn converts_between_tag_versions_lossless() {
     assert!(output.status.success());
     assert_eq!(output.stdout, b"Sample Title");
 }
+
+#[test]
+fn purges_specific_tags() {
+    let file2_2 = TestFile::id3v2_2();
+    let file2_3 = TestFile::id3v2_3();
+    let file2_4 = TestFile::id3v2_4();
+    let fpath2_2 = file2_2.path().as_os_str();
+    let fpath2_3 = file2_3.path().as_os_str();
+    let fpath2_4 = file2_4.path().as_os_str();
+
+    let output = rsid3_run(&[fpath2_2]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-id3v2.3"), OsStr::new("--purge-id3v2.4"), fpath2_2]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_2]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-id3v2.2"), fpath2_2]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_2]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_3]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-id3v2.2"), OsStr::new("--purge-id3v2.4"), fpath2_3]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_3]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-id3v2.3"), fpath2_3]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_3]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_4]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-id3v2.2"), OsStr::new("--purge-id3v2.3"), fpath2_4]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_4]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-id3v2.4"), fpath2_4]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_4]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert!(!output.stdout.is_empty());
+}
+#[test]
+fn purges_all_tags() {
+    let file2_2 = TestFile::id3v2_2();
+    let file2_3 = TestFile::id3v2_3();
+    let file2_4 = TestFile::id3v2_4();
+    let fpath2_2 = file2_2.path().as_os_str();
+    let fpath2_3 = file2_3.path().as_os_str();
+    let fpath2_4 = file2_4.path().as_os_str();
+
+    let output = rsid3_run(&[fpath2_2]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-all"), fpath2_2]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_2]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_3]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-all"), fpath2_3]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_3]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_4]);
+    assert!(output.status.success());
+    assert!(!output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--purge-all"), fpath2_4]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[fpath2_4]);
+    assert!(output.status.code().unwrap() == ExitCode::TagNotFound as i32);
+    assert!(!output.stdout.is_empty());
+}
