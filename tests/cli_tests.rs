@@ -476,3 +476,49 @@ fn converts_between_tag_versions_noop() {
     let file2_4_new_content = std::fs::read(fpath2_4).unwrap();
     assert_eq!(file2_4_old_content, file2_4_new_content);
 }
+
+#[test]
+fn converts_between_tag_versions_lossless() {
+    let file = TestFile::id3v2_2();
+    let fpath = file.path().as_os_str();
+
+    let output = rsid3_run(&[OsStr::new("--TT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let output = rsid3_run(&[OsStr::new("--id3v2.3"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let output = rsid3_run(&[OsStr::new("--id3v2.4"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TIT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+
+    let output = rsid3_run(&[OsStr::new("--TMOO="), OsStr::new("Sample Mood"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--id3v2.2"), fpath]);
+    assert!(output.status.code().unwrap() == ExitCode::ActionFailed as i32);
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TMOO-"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--id3v2.2"), fpath]);
+    assert!(output.status.success());
+    assert!(output.stdout.is_empty());
+
+    let output = rsid3_run(&[OsStr::new("--TT2"), fpath]);
+    assert!(output.status.success());
+    assert_eq!(output.stdout, b"Sample Title");
+}
