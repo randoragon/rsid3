@@ -93,19 +93,19 @@ pub fn print_tag_frame_query(tag: &Tag, query: &Frame, fpath: impl AsRef<Path>) 
         if frame_matches_query(frame, query)? {
             match query.id() {
                 "TXXX" => {
-                    print!("{}", &get_content_txxx(frame)?.value);
+                    print!("{}", get_content_txxx(frame)?.value);
                     return Ok(true);
                 },
                 "WXXX" => {
-                    print!("{}", &get_content_wxxx(frame)?.link);
+                    print!("{}", get_content_wxxx(frame)?.link);
                     return Ok(true);
                 },
                 "COMM" => {
-                    print!("{}", &get_content_comm(frame)?.text);
+                    print!("{}", get_content_comm(frame)?.text);
                     return Ok(true);
                 },
                 "USLT" => {
-                    print!("{}", &get_content_uslt(frame)?.text);
+                    print!("{}", get_content_uslt(frame)?.text);
                     return Ok(true);
                 },
                 x if x.starts_with('T') && x != "TIPL" => {
@@ -181,7 +181,7 @@ pub fn set_tag_frame(tag: &mut Tag, mut frame: Frame, fpath: impl AsRef<Path>) -
                 // This is a bit ugly, but it's the easiest and simplest way to do this.
                 frame = match tag_frame.id() {
                     "COMM" => {
-                        let found_content = get_content_comm(&tag_frame)?;
+                        let found_content = get_content_comm(tag_frame)?;
                         let new_content = get_content_comm(&frame)?;
                         assert!(found_content.description == new_content.description);
                         let comment = Comment {
@@ -192,7 +192,7 @@ pub fn set_tag_frame(tag: &mut Tag, mut frame: Frame, fpath: impl AsRef<Path>) -
                         Frame::with_content("COMM", Content::Comment(comment))
                     },
                     "USLT" => {
-                        let found_content = get_content_uslt(&tag_frame)?;
+                        let found_content = get_content_uslt(tag_frame)?;
                         let new_content = get_content_uslt(&frame)?;
                         assert!(found_content.description == new_content.description);
                         let lyrics = Lyrics {
