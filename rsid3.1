@@ -1,0 +1,207 @@
+.TH RSID3 1 "2026-08-22" "rsid3-1.0.0" ""
+.SH NAME
+rsid3 - list and edit ID3v2 tags
+.SH SYNOPSIS
+.B rsid3
+.RI [ OPTION ]...
+.RI [ FILE ]...
+.SH DESCRIPTION
+.B rsid3
+reads or writes ID3v2 tags in mp3 files. It has partial support for ID3v2.2, ID3v2.3 and ID3v2.4.
+.P
+.B rsid3
+paragraph 2...
+.SH OPTIONS
+.TP
+.RB \-h , " \-\-help"
+Prints this help message.
+.TP
+.RB \-V , " \-\-version"
+Prints version information.
+.TP
+.RB \-L , " \-\-list-frames"
+Lists all supported frames.
+.TP
+.RB "\-d SEP" , " \-\-frame-sep SEP"
+Sets the frame separator to SEP (default: "\\n").
+.TP
+.RB "\-D SEP" , " \-\-file-sep SEP"
+Sets the file separator to SEP (default: "\\n").
+.TP
+.RB \-0d , " \-\-frame-sep-null"
+Sets the frame separator to the null byte.
+.TP
+.RB \-0D , " \-\-file-sep-null"
+Sets the file separator to the null byte.
+.TP
+.RI "\-\-FRAME [" DESC "] [" LANG ]
+Prints the value of FRAME. FRAME can be any ID3v2 frame identifier
+(see
+.B FRAMES
+section).
+.IP
+The frames TXXX, WXXX, TXX and WXX require a second argument: DESC.
+The frames COMM, USLT, COM and ULT require a second and third argument: DESC and LANG.
+.TP
+.RI "\-\-FRAME= [" DESC "] [" LANG "] TEXT"
+Sets the value of FRAME to TEXT. FRAME can be any ID3v2 frame identifier
+(see
+.B FRAMES
+section).
+.IP
+The frames TXXX, WXXX, TXX and WXX require a third argument: DESC.
+The frames COMM, USLT, COM and ULT require a third and fourth argument: DESC and LANG.
+.TP
+.RI "\-\-FRAME- [" DESC "] [" LANG ]
+Deletes FRAME. FRAME can be any ID3v2 frame identifier
+(see
+.B FRAMES
+section).
+.IP
+The frames TXXX, WXXX, TXX and WXX require a second argument: DESC.
+The frames COMM, USLT, COM and ULT require a second and third argument: DESC and LANG.
+.TP
+--id3v2.2
+.TP
+--id3v2.3
+.TP
+--id3v2.4
+Converts tags to the requested version of ID3v2. The conversion shall be lossless,
+or fail if it is not possible to preserve all information.
+.SH EXIT STATUS
+.P
+By convention, positive error codes indicate that the user
+is guilty, and negative that either the program malfunctioned
+or some other third-party caused an error (e.g. insufficient memory).
+.IP 0
+success
+.IP 1
+failed to open file
+.IP 2
+invalid query (see
+.B QUERY SYNTAX
+)
+.IP 3
+value not found; this means that some query contains a section/key
+pair that is nowhere to be found within the file, even if the
+query is syntactically correct and the file successfully opened
+.IP -1
+internal error; this should be reported (see
+.B BUGS
+)
+.IP -2
+memory error; failed to allocate enough memory for the process
+.SH QUERY SYNTAX
+.IP \(bu 2
+Each query is a mathematical expression in infix notation
+.IP \(bu 2
+operands must be of form \fI{section.key}\fP (section is optional)
+.IP \(bu 2
+operators are one of:
+.IP "" 6
+\fB+\fP	addition
+.IP "" 6
+\fB-\fP	subtraction
+.IP "" 6
+\fB*\fP	multiplication
+.IP "" 6
+\fB/\fP	division
+.IP "" 6
+\fB%\fP	modulus
+.IP "" 6
+\fB^\fP	exponentiation
+.IP \(bu 2
+round parentheses may be used to enforce order of operation
+.IP \(bu 2
+operator precedence and associativity should work intuitively (like in math)
+.IP \(bu 2
+the \fB*\fP operator is implicit and may be omitted (like in math)
+.IP \(bu 2
+all operators work on numbers and some work on strings
+.IP \(bu 2
+for strings, \fB+\fP is concatenation, and \fB*\fP is repetition (must be multiplied by a non-negative number, only the integer part matters)
+.SH FILE FORMAT
+.IP \(bu 2
+section names and key/value pairs must be on separate lines
+.IP \(bu 2
+section and key names may consist of alphanumeric characters, hyphens and underscores
+.IP \(bu 2
+key and value must be delimited by \fB=\fP (may be surrounded by whitespace)
+.IP \(bu 2
+leading/trailing whitespace characters are ignored
+.IP \(bu 2
+semicolon starts a comment until the end of the line
+.IP \(bu 2
+values consisting of digits (with optional decimal part) are interpreted as numbers
+.IP \(bu 2
+any value that fails to be recognized as a number is considered a string
+.IP \(bu 2
+you can force a value to be a string by enclosing it in double quotes
+.IP \(bu 2
+double quotes may also be used to have a string with leading/trailing whitespace
+.SH BUGS
+.P
+.B iniget
+uses double for all number calculations, so it's only viable
+for relatively simple calculations. With huge or tiny numbers,
+you will get output like
+.BR inf .
+.P
+Internally, each query has its own copies of all data that it needs
+to compute the result. While individual queries were optimized not to
+store multiple copies of the same value, separate queries using the
+same value store independent copies. Because of that, if you pass
+many queries, each needing a very long string value from the file,
+the memory footprint of the program could get very large.
+.P
+Bugs can either be reported directly to the author, or by opening
+an issue on the official GitHub repository:
+.sp
+.IP \(bu 2
+.MT randoragongamedev@gmail.com
+Randoragon
+.ME
+.sp -1
+.IP \(bu 2
+.IR https://github.com/randoragon/iniget .
+.SH EXAMPLE
+Consider the following input file:
+.TS -C
+box;
+cb
+l.
+file.ini
+_
+.nf
+globalvar = 5
+
+; this is a comment
+[nums]
+a = 2.5
+b = .99
+
+[str]
+ed = ed is the standard text editor
+.fi
+.TE
+.sp
+.P
+Now, here are some commands and their outputs:
+.sp
+.EX
+.B $ iniget file.ini '{globalvar} + {nums.a}'
+7.5
+
+.B $ iniget file.ini '{globalvar}{nums.b}'
+4.95
+
+.B $ iniget file.ini '{str.ed} + {str.ed}' '{str.ed} * {nums.a}'
+ed is the standard text editored is the standard text editor
+ed is the standard text editored is the standard text editor
+
+.B $ cat file.ini | iniget - '{nums.a} % {nums.b}'
+0.52
+.EE
+.SH AUTHORS
+.B iniget
+was written by Randoragon. See included LICENSE file for terms of use.
