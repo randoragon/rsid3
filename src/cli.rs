@@ -115,7 +115,7 @@ impl Cli {
         println!("{:3}  Success, but at least one frame was missing (see explanation in (5))", ExitCode::FrameNotFound as u8);
         println!("{:3}  Success, but at least one file did not have a tag (see explanation in (6))", ExitCode::TagNotFound as u8);
         println!("{:3}  Invalid arguments", ExitCode::BadArg as u8);
-        println!("{:3}  Failed to execute a specified action", ExitCode::ActionFailed as u8);
+        println!("{:3}  Failed to execute the specified action", ExitCode::ActionFailed as u8);
         println!();
         println!("(1) If no print/set/delete/convert/purge options are passed, all frames are printed.");
         println!("(2) Any number of print/set/delete/convert/purge options can be passed in any order. The options are");
