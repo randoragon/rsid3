@@ -15,7 +15,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 DESTDIR=
 PREFIX=/usr/local
-MANPREFIX=$(PREFIX)/share/man
 
 .PHONY: all usage install uninstall
 
@@ -28,17 +27,16 @@ usage:
 	@echo
 	@echo 'Available targets:'
 	@echo '- install:   Installs rsid3 at "$$DESTDIR/$$PREFIX/bin/rsid3"'
-	@echo '             and the man pages under "$$DESTDIR/$$MANPREFIX/"'
-	@echo '             (defaults: PREFIX=/usr/local, MANPREFIX="$$PREFIX/share/man")'
+	@echo '             and the man pages under "$$DESTDIR/$$PREFIX/share/man"'
+	@echo '             (defaults: DESTDIR="", PREFIX="/usr/local")'
 	@echo '- uninstall: Removes installed files, if any'
 
 install:
 	cargo install --path . --root $(DESTDIR)$(PREFIX)
 	@chmod -- 755 $(DESTDIR)$(PREFIX)/bin/rsid3
-	@mkdir -p $(DESTDIR)$(MANPREFIX)/man1
-	cp -- rsid3.1 $(DESTDIR)$(MANPREFIX)/man1
-	@chmod -- 644 $(DESTDIR)$(MANPREFIX)/man1/rsid3.1
+	@mkdir -p -- $(DESTDIR)$(PREFIX)/share/man/man1
+	install -m 644 -D -- rsid3.1 $(DESTDIR)$(PREFIX)/share/man/man1/rsid3.1
 
 uninstall:
 	rm -f -- $(DESTDIR)$(PREFIX)/bin/rsid3
-	rm -f -- $(DESTDIR)$(MANPREFIX)/man1/rsid3.1
+	rm -f -- $(DESTDIR)$(PREFIX)/share/man/man1/rsid3.1
