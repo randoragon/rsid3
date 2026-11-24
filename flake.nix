@@ -15,6 +15,12 @@
         version = manifest.version;
         cargoLock.lockFile = ./Cargo.lock;
         src = pkgs.lib.cleanSource ./.;
+        installPhase = ''
+         runHook preInstall
+         mkdir -p $out/share/man/man1 $out/bin
+         make install PREFIX=$out
+         runHook postInstall
+       '';
       };
     in {
       packages = forAllSystems (system: {
@@ -26,6 +32,7 @@
           inputsFrom = [ (rsid3 pkgsFor.${system}) ];
           buildInputs = with pkgsFor.${system}; [
             clippy
+            gnumake
           ];
         };
       });
