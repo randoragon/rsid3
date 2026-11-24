@@ -69,3 +69,22 @@ subset of text-based frames:
 - lyrics (`USLT`)
 
 More frames may be supported in the future, if deemed useful.
+
+## Installing
+
+To install, clone the repository, and run (if necessary, as root):
+
+```sh
+make install
+```
+
+This will build and install the `rsid` binary and the man page. See `make usage`
+for more information.
+
+For Nix users, there is `flake.nix` which contains both a dev-shell and a
+package that you can install.
+
+## Gen-AI disclaimer
+
+This project is fully human-made. No generative AI was used to write the code,
+the documentation, or any of the like.
