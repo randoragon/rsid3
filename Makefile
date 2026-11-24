@@ -36,6 +36,7 @@ install:
 	@chmod -- 755 $(DESTDIR)$(PREFIX)/bin/rsid3
 	@mkdir -p -- $(DESTDIR)$(PREFIX)/share/man/man1
 	install -m 644 -D -- rsid3.1 $(DESTDIR)$(PREFIX)/share/man/man1/rsid3.1
+	gzip -- $(DESTDIR)$(PREFIX)/share/man/man1/rsid3.1
 
 uninstall:
 	rm -f -- $(DESTDIR)$(PREFIX)/bin/rsid3
