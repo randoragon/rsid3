@@ -1,0 +1,257 @@
+.TH RSID3 1 "2026-11-24" "rsid3-1.0.0" ""
+.SH NAME
+rsid3 - list and edit ID3v2 tags
+.SH SYNOPSIS
+.B rsid3
+.RI [ OPTION ]...
+.RI [ ACTION ]...
+.RI [ FILE ]...
+.SH DESCRIPTION
+.B rsid3
+reads or writes ID3v2 tags in mp3 files. It has partial support for ID3v2.2, ID3v2.3 and ID3v2.4.
+.P
+If executed without specifying any actions,
+.B rsid3
+by default prints all frames that it finds in every
+.IR FILE .
+.P
+Otherwise, actions are executed in the order in which they were passed on every
+.IR FILE .
+This allows for chaining many actions for many files in a single command, which
+is intentional design.
+.P
+Existing tags are never converted to different versions, unless an explicit
+action is used. For new tags, ID3v2.4 is the default.
+.SH OPTIONS
+.TP
+.RB \-h , " \-\-help"
+Prints this help message.
+.TP
+.RB \-V , " \-\-version"
+Prints version information.
+.TP
+.RB \-L , " \-\-list-frames"
+Lists all supported frames. See also
+.B FRAMES
+section.
+.TP
+.RB "\-d SEP" , " \-\-frame-sep SEP"
+Sets the frame separator to SEP (default: "\\n").
+.TP
+.RB "\-D SEP" , " \-\-file-sep SEP"
+Sets the file separator to SEP (default: "\\n").
+.TP
+.RB \-0d , " \-\-frame-sep-null"
+Sets the frame separator to the null byte.
+.TP
+.RB \-0D , " \-\-file-sep-null"
+Sets the file separator to the null byte.
+.SH ACTIONS
+Actions are a subcategory of options, and are listed separately only for the
+sake of convenience.
+.TP
+.RI "\-\-FRAME [" DESC "] [" LANG ]
+Prints the value of FRAME. FRAME can be any ID3v2 frame identifier
+(see
+.B FRAMES
+section).
+.IP
+The frames TXXX, WXXX, TXX and WXX require a second argument: DESC.
+The frames COMM, USLT, COM and ULT require second and third arguments: DESC and LANG.
+.IP
+If the value of LANG is unknown in advance or irrelevant, "first" can be passed
+instead, in which case the first frame with a matching DESC is targeted. Note
+that actions modifying the tag may change the order of the frames and affect
+what is "first".
+.TP
+.RI "\-\-FRAME= [" DESC "] [" LANG "] TEXT"
+Sets the value of FRAME to TEXT. FRAME can be any ID3v2 frame identifier
+(see
+.B FRAMES
+section).
+.IP
+The frames TXXX, WXXX, TXX and WXX require a third argument: DESC.
+The frames COMM, USLT, COM and ULT require third and fourth arguments: DESC and LANG.
+.IP
+If the value of LANG is unknown in advance or irrelevant, "first" can be passed
+instead, in which case the first frame with a matching DESC is targeted. If no
+frame with a matching DESC is found, nothing is set. Note that actions modifying
+the tag may change the order of the frames and affect what is "first".
+.TP
+.RI "\-\-FRAME- [" DESC "] [" LANG ]
+Deletes FRAME. FRAME can be any ID3v2 frame identifier
+(see
+.B FRAMES
+section).
+.IP
+The frames TXXX, WXXX, TXX and WXX require a second argument: DESC.
+The frames COMM, USLT, COM and ULT require second and third arguments: DESC and LANG.
+.IP
+If the value of LANG is unknown in advance or irrelevant, "first" can be passed
+instead, in which case the first frame with a matching DESC is targeted. Note
+that actions modifying the tag may change the order of the frames and affect
+what is "first".
+.TP
+--id3v2.2, --id3v2.3, --id3v2.4
+Convert tags to the requested version of ID3v2. The conversion shall be lossless,
+or fail if it is not possible to preserve all information.
+.TP
+--force-id3v2.2, --force-id3v2.3, --force-id3v2.4
+Convert tags to the requested version of ID3v2. The conversion shall always
+succeed, but any frames that cannot be converted to the target version shall be
+removed.
+.TP
+--purge-id3v2.2, --purge-id3v2.3, --purge-id3v2.4
+Purge tags of the requested version, if present.
+.TP
+--purge-all
+Purge all ID3 tags, if present. Note that this also purges ID3v1 tags.
+.SH EXIT STATUS
+.IP 0
+Success.
+.IP 1
+Success, but at least one frame was missing. This exit code can only appear
+when using print and delete actions. For example, 'rsid3 --TIT2- file.mp3'
+shall exit with 0 iff TIT2 got deleted and with 1 iff it was already absent
+from file.mp3. With print actions, the behavior is the same and it is the only
+way to tell apart a missing frame from an empty string. If multiple frames or
+files are concerned, the value is 0 iff all of them existed in all files.
+.IP 2
+Success, but at least one file did not have a tag. This code can only appear
+when invoking the command without any actions.
+.IP 255
+Invalid arguments.
+.IP 254
+Failed to execute the specified action.
+.SH FRAMES
+This section lists all ID3v2 frames and specifiess the level of support
+available in
+.BR rsid3 .
+This information can also be obtained with the "--list-frames" option.
+.TS -C
+box;
+cbcbcbcbcb
+c|c|c|l|c.
+ID3 standard	Name	Alias	Description	Support
+_
+2.2, 2.3, 2.4	AENC	CRA	Audio encryption	r
+2.2, 2.3, 2.4	APIC	PIC	Attached (or linked) picture	r
+2.4	ASPI		Audio seek point index	r
+2.3, 2.4	CHAP		Chapter	r
+2.2, 2.3, 2.4	COMM	COM	User comment (DESC, LANG, TEXT)	r/w
+2.3, 2.4	COMR		Commercial frame	r
+2.2	CRM		Encrypted meta frame	r
+2.3, 2.4	CTOC		Table of contents	r
+2.3, 2.4	ENCR		Encryption method registration	r
+2.2, 2.3	EQUA	EQU	Equalization	r
+2.4	EQU2		Equalization 2	r
+2.2, 2.3, 2.4	ETCO	ETC	Event timing codes	r
+2.2, 2.3, 2.4	GEOB	GEO	General encapsulated object	r
+2.3, 2.4	GRID		Group identification registration	r
+2.3, 2.4	GRP1		iTunes grouping (nonstandard)	r
+2.2, 2.3	IPLS	IPL	Involved people list	r
+2.2, 2.3, 2.4	LINK	LNK	Linked information	r
+2.2, 2.3, 2.4	MCDI	MCI	Binary dump of CD's TOC	r
+2.2, 2.3, 2.4	MLLT	MLL	MPEG location lookup table	r
+2.3, 2.4	MVIN		iTunes movement number/count (nonstandard)	r
+2.3, 2.4	MVNM		iTunes movement name (nonstandard)	r
+2.3, 2.4	OWNE		Ownership frame	r
+2.2, 2.3, 2.4	PCNT	CNT	Play counter	r
+2.3, 2.4	PCST		iTunes podcast flag (nonstandard)	r
+2.2, 2.3, 2.4	POPM	POP	Popularimeter	r
+2.3, 2.4	POSS		Position synchronisation frame	r
+2.3, 2.4	PRIV		Private frame	r
+2.2, 2.3, 2.4	RBUF	BUF	Recommended buffer size	r
+2.3	RVAD		Relative volume adjustment	r
+2.2,      2.4	RVA2	RVA	Relative volume adjustment 2	r
+2.2, 2.3, 2.4	RVRB	REV	Reverb	r
+2.4	SEEK		Seek frame	r
+2.4	SIGN		Signature frame	r
+2.2, 2.3, 2.4	SYLT	SLT	Synchronised lyrics/text	r
+2.2, 2.3, 2.4	SYTC	STC	Synchronised tempo codes	r
+2.2, 2.3, 2.4	TALB	TAL	Album	r/w
+2.2, 2.3, 2.4	TBPM	TBP	Beats per minute	r/w
+2.3, 2.4	TCAT		iTunes podcast category (nonstandard)	r/w
+2.3, 2.4	TCMP		iTunes compilation flag (nonstandard)	r/w
+2.2, 2.3, 2.4	TCOM	TCM	Composer	r/w
+2.2, 2.3, 2.4	TCON	TCO	Content type (genre)	r/w
+2.2, 2.3, 2.4	TCOP	TCR	Copyright	r/w
+2.2, 2.3	TDAT	TDA	Date of recording (DDMM)	r/w
+2.4	TDEN		Encoding time (YYYY-MM-DDTHH:MM:SS)	r/w
+2.3, 2.4	TDES		iTunes podcast description (nonstandard)	r/w
+2.2, 2.3, 2.4	TDLY	TDY	Playlist delay (ms)	r/w
+2.4	TDOR		Original release time (YYYY-MM-DDTHH:MM:SS)	r/w
+2.4	TDRC		Recording time (YYYY-MM-DDTHH:MM:SS)	r/w
+2.4	TDRL		Release time (YYYY-MM-DDTHH:MM:SS)	r/w
+2.4	TDTG		Tagging time (YYYY-MM-DDTHH:MM:SS)	r/w
+2.2, 2.3, 2.4	TENC	TEN	Encoder	r/w
+2.2, 2.3, 2.4	TEXT	TXT	Lyricist	r/w
+2.2, 2.3, 2.4	TFLT	TFT	File type	r/w
+2.3, 2.4	TGID		iTunes podcast identifier (nonstandard)	r/w
+2.2, 2.3	TIME		Time of recording (HHMM)	r/w
+2.4	TIPL		Involved people list	r
+2.2, 2.3, 2.4	TIT1	TT1	Content group description	r/w
+2.2, 2.3, 2.4	TIT2	TT2	Title	r/w
+2.2, 2.3, 2.4	TIT3	TT3	Subtitle/description refinement	r/w
+2.2, 2.3, 2.4	TKEY	TKE	Starting key	r/w
+2.3, 2.4	TKWD		iTunes podcast keywords (nonstandard)	r/w
+2.2, 2.3, 2.4	TLAN	TLA	Audio languages	r/w
+2.2, 2.3, 2.4	TLEN	TLE	Audio length (ms)	r/w
+2.4	TMCL		Musicians credits list	r
+2.2, 2.3, 2.4	TMED	TMT	Source media type	r/w
+2.4	TMOO		Mood	r/w
+2.2, 2.3, 2.4	TOAL	TOT	Original album/movie/show title	r/w
+2.2, 2.3, 2.4	TOFN	TOF	Original filename	r/w
+2.2, 2.3, 2.4	TOLY	TOL	Original lyricist	r/w
+2.2, 2.3, 2.4	TOPE	TOA	Original artist/performer	r/w
+2.2, 2.3	TORY	TOR	Original release year	r/w
+2.3, 2.4	TOWN		Owner/Licensee	r/w
+2.2, 2.3, 2.4	TPE1	TP1	Lead artist/performer/soloist/group	r/w
+2.2, 2.3, 2.4	TPE2	TP2	Band/Orchestra/Accompaniment	r/w
+2.2, 2.3, 2.4	TPE3	TP3	Conductor	r/w
+2.2, 2.3, 2.4	TPE4	TP4	Interpreter/Remixer/Modifier	r/w
+2.2, 2.3, 2.4	TPOS	TPA	Part of set	r/w
+2.4	TPRO		Produced	r/w
+2.2, 2.3, 2.4	TPUB	TPB	Publisher	r/w
+2.2, 2.3, 2.4	TRCK	TRK	Track number	r/w
+2.2, 2.3	TRDA	TRD	Recording dates	r/w
+2.3, 2.4	TRSN		Internet radio station name	r/w
+2.3, 2.4	TRSO		Internet radio station owner	r/w
+2.2, 2.3	TSIZ	TSI	Size of audio data (bytes)	r/w
+2.3, 2.4	TSO2		iTunes album artist sort (nonstandard)	r/w
+2.4	TSOA		Album sort order key	r/w
+2.3, 2.4	TSOC		iTunes composer sort (nonstandard)	r/w
+2.4	TSOP		Performer sort order key	r/w
+2.4	TSOT		Title sort order key	r/w
+2.2, 2.3, 2.4	TSRC	TRC	International Standard Recording Code (ISRC)	r/w
+2.2, 2.3, 2.4	TSSE	TSS	Encoder settings	r/w
+2.4	TSST		Set subtitle	r/w
+2.2, 2.3, 2.4	TXXX	TXX	User-defined text data (DESC, TEXT)	r/w
+2.2, 2.3	TYER	TYE	Year of recording (YYYY)	r/w
+2.2, 2.3, 2.4	UFID	UFI	Unique file identifier	r
+2.3, 2.4	USER		Terms of use	r
+2.2, 2.3, 2.4	USLT	ULT	Unsynchronised lyrics/transcription (DESC, LANG, TEXT)	r/w
+2.2, 2.3, 2.4	WCOM	WCM	Commercial information	r/w
+2.2, 2.3, 2.4	WCOP	WCP	Copyright information	r/w
+2.3, 2.4	WFED		iTunes podcast feed (nonstandard)	r/w
+2.2, 2.3, 2.4	WOAF	WAF	Official file information	r/w
+2.2, 2.3, 2.4	WOAR	WAR	Official artist/performer information	r/w
+2.2, 2.3, 2.4	WOAS	WAS	Official source information	r/w
+2.3, 2.4	WORS		Official internet radio information	r/w
+2.3, 2.4	WPAY		Payment information	r/w
+2.2, 2.3, 2.4	WPUB	WPB	Official publisher information	r/w
+2.2, 2.3, 2.4	WXXX	WXX	User-defined URL data (DESC, URL)	r/w
+.TE
+.SH ID3 STANDARDS
+.TS
+allbox;
+rbl.
+ID3v1	http://id3.org/ID3v1
+ID3v2.3	http://id3.org/id3v2.3.0
+ID3v2.2	http://id3.org/id3v2-00
+ID3v2.4	http://id3.org/id3v2.4.0-frames
+.TE
+
+.SH AUTHORS
+.B rsid3
+was written by randoragon and distributed under the GPL-2.0 license.
